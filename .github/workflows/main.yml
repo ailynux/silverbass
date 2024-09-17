@@ -1,27 +1,37 @@
 name: Deploy SilverBass Playlist
+
 on:
   push:
     branches:
       - main
   schedule:
-    - cron: '0 0 * * 1' # Deploys weekly on Monday
+    - cron: '0 0 * * 1'  # Weekly build on Monday
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      # Checkout the repository
+      - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Build and run Docker container
+      # Build the Docker image
+      - name: Build Docker Image
         run: docker build -t silverbass-generator .
 
+      # Run the Docker container and mount the 'docs' folder
+      - name: Run Docker Container
+        run: |
+          docker run -v ${{ github.workspace }}/docs:/app/docs silverbass-generator
+          echo "Checking files after Docker run:"
+          ls -la docs/
+
+      # Commit and push changes to GitHub Pages
       - name: Deploy to GitHub Pages
         run: |
-          docker run silverbass-generator
           git config --global user.email "you@example.com"
           git config --global user.name "GitHub Action"
-          git add docs/index.html
-          git commit -m "Deploy SilverBass Playlist"
-          git push
+          git add docs/index.html || echo "No changes to add"
+          git commit -m "Deploy SilverBass Playlist" || echo "No changes to commit"
+          git push || echo "No changes to push"
