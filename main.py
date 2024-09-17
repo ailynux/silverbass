@@ -24,11 +24,10 @@ template = Template('''
             padding: 0;
         }
 
-        h1 {
+       h1 {
             font-size: 3rem;
             font-weight: 700;
             color: #fff;
-            text-align: center;
             background-color: #1f1f1f;
             padding: 40px 20px;
             border-radius: 10px;
@@ -36,9 +35,34 @@ template = Template('''
             overflow: hidden;
             margin-bottom: 40px;
             box-shadow: 0 0 10px #ffcc00, 0 0 20px #ff6f61, 0 0 30px #1db954, 0 0 40px #ff6f61;
-            animation: glowPulse 3s ease-in-out infinite; /* Applies the new glow pulse animation */
+            animation: glowPulse 3s ease-in-out infinite; /* Glowing pulse animation */
             display: inline-block;
-            background-image: url('/images/fishgif.webp');
+            text-align: center;
+        }
+
+        h1::before {
+            content: "🎣";
+            font-size: 1.5rem;
+            position: absolute;
+            left: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            animation: fishSwim 5s ease-in-out infinite;
+        }
+
+        h1 .badges {
+            display: block;
+            margin-top: 10px;
+        }
+
+        h1 img {
+            margin: 0 5px;
+            vertical-align: middle;
+            transition: transform 0.2s ease;
+        }
+
+        h1 img:hover {
+            transform: scale(1.2);
         }
 
         @keyframes glowPulse {
@@ -56,6 +80,10 @@ template = Template('''
             }
         }
 
+        @keyframes fishSwim {
+            0%, 100% { left: -30px; }
+            50% { left: 100%; }
+        }
 
         h2 {
             font-size: 1.75rem;
