@@ -32,7 +32,7 @@ template = Template('''
             padding: 40px 20px;
             background-color: #1f1f1f;
             border-bottom: 1px solid #333;
-            background-image: url('images/fishgif.webp'); 
+            background-image: url('/images/fishgif.webp'); 
             background-size: cover;
             background-repeat: no-repeat;
             background-position: center;
