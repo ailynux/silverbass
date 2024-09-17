@@ -6,7 +6,7 @@ import os
 with open("playlist.yml", "r") as file:
     playlists = yaml.safe_load(file)
 
-# HTML Template with dark, minimal, and refined CSS styling
+# HTML 
 template = Template('''
 <!DOCTYPE html>
 <html lang="en">
@@ -14,6 +14,7 @@ template = Template('''
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SilverBass - Weekly Playlist</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -23,14 +24,18 @@ template = Template('''
             padding: 0;
         }
         h1 {
-            font-size: 2.5rem;
+            font-size: 3rem;
             font-weight: 700;
             color: #fff;
             text-align: center;
             margin: 0;
-            padding: 30px;
+            padding: 40px 20px;
             background-color: #1f1f1f;
             border-bottom: 1px solid #333;
+            background-image: url('images/fishgif.webp'); 
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
         }
         h2 {
             font-size: 1.75rem;
@@ -72,16 +77,11 @@ template = Template('''
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
             border-radius: 15px;
         }
-        /* Scrollbar Styling */
-        ::-webkit-scrollbar {
-            width: 10px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background-color: #333;
-            border-radius: 5px;
-        }
-        ::-webkit-scrollbar-track {
-            background-color: #121212;
+        footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.9rem;
+            color: #aaa;
         }
     </style>
 </head>
@@ -96,6 +96,9 @@ template = Template('''
         {% endfor %}
         </ul>
     {% endfor %}
+    <footer>
+        <p>Connect with me on <a href="https://github.com/ailynux" target="_blank">GitHub</a> or <a href="https://www.linkedin.com/in/ailyndiaz01" target="_blank">LinkedIn</a>.</p>
+    </footer>
     </div>
 </body>
 </html>
