@@ -36,7 +36,7 @@ template = Template('''
             text-align: center;
             background-color: #1f1f1f;
             padding: 40px 20px;
-            background-image: url('../images/fishgif.webp');
+            background-image: url('/images/fishgif.webp');
             background-size: cover;
             background-repeat: no-repeat;
             background-position: center;
@@ -93,7 +93,8 @@ template = Template('''
 </head>
 <body>
     <h1>SilverBass - Weekly Music Playlist</h1>
-    <div style="height: 500px; width: 100%; background-image: url('../images/fishgif.webp'); background-size: cover; background-position: center;"></div>
+    <img src="../images/fishgif.webp" alt="Fish Image">
+    <div style="height: 500px; width: 100%; background-image: url('/images/fishgif.webp'); background-size: cover; background-position: center;"></div>
     <div class="container">
     {% for playlist in playlists %}
         <h2>{{ playlist.theme }}</h2>
