@@ -87,6 +87,7 @@ template = Template('''
 </head>
 <body>
     <h1>SilverBass - Weekly Music Playlist</h1>
+    <div style="height: 500px; width: 100%; background-image: url('docs/images/fishgif.webp'); background-size: cover; background-position: center;"></div>
     <div class="container">
     {% for playlist in playlists %}
         <h2>{{ playlist.theme }}</h2>
