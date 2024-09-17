@@ -16,13 +16,19 @@ template = Template('''
     <title>SilverBass</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body {
+         body {
             font-family: 'Roboto', sans-serif;
             background-color: #121212;
             color: #e0e0e0;
             margin: 0;
             padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
         }
+
 
        h1 {
             font-size: 3rem;
