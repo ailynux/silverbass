@@ -13,7 +13,7 @@ template = Template('''
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SilverBass - Weekly Playlist</title>
+    <title>SilverBass</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -24,24 +24,38 @@ template = Template('''
             padding: 0;
         }
 
-        @keyframes shadowAnimation {
-            0% { text-shadow: 1px 1px #000; }
-            50% { text-shadow: 5px 5px #000; }
-            100% { text-shadow: 1px 1px #000; }
-        }
-
         h1 {
             font-size: 3rem;
+            font-weight: 700;
             color: #fff;
             text-align: center;
             background-color: #1f1f1f;
             padding: 40px 20px;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 40px;
+            box-shadow: 0 0 10px #ffcc00, 0 0 20px #ff6f61, 0 0 30px #1db954, 0 0 40px #ff6f61;
+            animation: glowPulse 3s ease-in-out infinite; /* Applies the new glow pulse animation */
+            display: inline-block;
             background-image: url('/images/fishgif.webp');
-            background-size: cover;
-            background-repeat: no-repeat;
-            background-position: center;
-            animation: shadowAnimation 5s infinite; /* Applies the animation */
         }
+
+        @keyframes glowPulse {
+            0% {
+                box-shadow: 0 0 10px #ffcc00, 0 0 20px #ff6f61, 0 0 30px #1db954, 0 0 40px #ff6f61;
+                color: #fff;
+            }
+            50% {
+                box-shadow: 0 0 20px #1db954, 0 0 30px #ffcc00, 0 0 40px #ff6f61, 0 0 50px #ffcc00;
+                color: #ffcc00;
+            }
+            100% {
+                box-shadow: 0 0 10px #ffcc00, 0 0 20px #ff6f61, 0 0 30px #1db954, 0 0 40px #ff6f61;
+                color: #fff;
+            }
+        }
+
 
         h2 {
             font-size: 1.75rem;
@@ -92,8 +106,14 @@ template = Template('''
     </style>
 </head>
 <body>
-    <h1>SilverBass - Weekly Music Playlist</h1>
-    <div style="height: 500px; width: 100%; background-image: url('/images/fishgif.webp'); background-size: cover; background-position: center;"></div>
+   <h1>
+    🎣 SilverBass - Weekly Music Playlist
+    <span class="badges">
+        <img src="https://img.shields.io/badge/Music-Spotify-%231DB954?style=flat-square&logo=spotify&logoColor=white" alt="Spotify Badge">
+        <img src="https://img.shields.io/badge/Playlist-Updated%20Weekly-blue?style=flat-square" alt="Weekly Playlist Badge">
+        <img src="https://img.shields.io/badge/Genre-Variety-orange?style=flat-square" alt="Genre Variety Badge">
+    </span>
+</h1>
     <div class="container">
     {% for playlist in playlists %}
         <h2>{{ playlist.theme }}</h2>
