@@ -110,7 +110,7 @@ We also have **GitHub Actions** integrated for CI/CD, making deployments and upd
 ## 🌐 Live Demo on GitHub Pages
 
 The SilverBass app is deployed using **GitHub Pages**!  
-Check out the live version [**here**](https://ailynux.github.io/silverbass/docs/index.html).
+Check out the live version [**here**](https://ailynux.github.io/silverbass/).
 
  <div align="center">
 
