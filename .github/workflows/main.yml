@@ -1,0 +1,27 @@
+name: Deploy SilverBass Playlist
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 0 * * 1' # Deploys weekly on Monday
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Build and run Docker container
+        run: docker build -t silverbass-generator .
+
+      - name: Deploy to GitHub Pages
+        run: |
+          docker run silverbass-generator
+          git config --global user.email "you@example.com"
+          git config --global user.name "GitHub Action"
+          git add docs/index.html
+          git commit -m "Deploy SilverBass Playlist"
+          git push
