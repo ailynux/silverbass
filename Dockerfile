@@ -1,20 +1,17 @@
-# Use Ubuntu as the base image
-FROM ubuntu:latest
+# Use the official Python image, which already has Python3 and pip
+FROM python:3.9-slim
 
 # Set the working directory
 WORKDIR /app
 
-# Update the system and install Python3 and pip3
-RUN apt-get update && apt-get upgrade -y \
-    && apt-get install -y python3 python3-pip
+# Install Python dependencies with pip3
+RUN pip install --upgrade pip \
+    && pip install PyYAML jinja2
 
-# Install required Python packages
-RUN pip3 install pyyaml jinja2
-
-# Copy your project files into the container
+# Copy the application files to the container
 COPY . .
 
-# Ensure correct permissions
+# Ensure correct permissions for the app directory
 RUN chmod -R 777 /app
 
 # Set the entry point to run your Python script
