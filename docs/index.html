@@ -14,20 +14,26 @@
             margin: 0;
             padding: 0;
         }
+
+        @keyframes shadowAnimation {
+            0% { text-shadow: 1px 1px #000; }
+            50% { text-shadow: 5px 5px #000; }
+            100% { text-shadow: 1px 1px #000; }
+        }
+
         h1 {
             font-size: 3rem;
-            font-weight: 700;
             color: #fff;
             text-align: center;
-            margin: 0;
-            padding: 40px 20px;
             background-color: #1f1f1f;
-            border-bottom: 1px solid #333;
-            background-image: url('../images/fishgif.webp'); 
+            padding: 40px 20px;
+            background-image: url('../images/fishgif.webp');
             background-size: cover;
             background-repeat: no-repeat;
             background-position: center;
+            animation: shadowAnimation 5s infinite; /* Applies the animation */
         }
+
         h2 {
             font-size: 1.75rem;
             color: #ff6f61;
