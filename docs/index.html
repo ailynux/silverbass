@@ -139,6 +139,7 @@
         <img src="https://img.shields.io/badge/Genre-Variety-orange?style=flat-square" alt="Genre Variety Badge">
     </span>
 </h1>
+<<<<<<< HEAD
     <div class="container">
     
         <h2>Chill Vibes</h2>
@@ -169,6 +170,19 @@
     
     <footer>
         <p>Connect with me on <a href="https://github.com/ailynux" target="_blank">GitHub</a> or <a href="https://www.linkedin.com/in/ailyndiaz01" target="_blank">LinkedIn</a>.</p>
+=======
+<div class="playlist-container">
+    {% for playlist in playlists %}
+        <h2 class="playlist-title">{{ playlist.theme }}</h2>
+        <ul class="playlist-list">
+            {% for song in playlist.songs %}
+                <li class="playlist-item">{{ song.title }} by {{ song.artist }} - <a href="{{ song.url }}" target="_blank" class="playlist-link">Listen</a></li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
+    <footer class="playlist-footer">
+        <p>Connect with me on <a href="https://github.com/ailynux" target="_blank" class="footer-link">GitHub</a> or <a href="https://www.linkedin.com/in/ailyndiaz01" target="_blank" class="footer-link">LinkedIn</a>.</p>
+>>>>>>> 6f221be (new backend)
     </footer>
     </div>
 </body>

@@ -1,3 +1,5 @@
+#action.yml
+
 name: "SilverBass - Music Playlist Generator"
 description: "Generates a weekly music playlist and updates GitHub Pages"
 inputs:
