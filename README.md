@@ -1,6 +1,6 @@
-<div align="center">
+<div"AtoZ"="AtoZ">
 
-# <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Headphone.png" alt="Headphone" width="65" height="65" />SilverBass - Weekly Music Playlist <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Speaker%20High%20Volume.png" alt="Speaker High Volume" width="65" height="65" />
+# <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Headphone.png" alt="Headphone"AtoZ- Weekly Music Playlist <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Speaker%20High%20Volume.png" alt="Speaker High Volume" width="65" height="65" />
 
 ![Python](https://img.shields.io/badge/Built%20with-Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![YAML](https://img.shields.io/badge/Configuration-YAML-F3C613?style=for-the-badge&logo=yaml&logoColor=white)
@@ -15,7 +15,7 @@
 
 
 
-Welcome to **SilverBass**! <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Animals/Fish.png" alt="Fish" width="95" height="95" /> This is a **Weekly Music Playlist** web app, built with love using **Python**, **YAML**, **XML**, and **Docker**! It's hosted on **GitHub Pages**, utilizes **GitHub Workspaces**, and has been integrated with **GitHub Actions** for seamless development and deployment.
+Welcome to *AtoZ* <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Animals/Fish.png" alt="Fish" width="95" height="95" /> This is a **Weekly Music Playlist** web app, built with love using **Python**, **YAML**, **XML**, and **Docker**! It's hosted on **GitHub Pages**, utilizes **GitHub Workspaces**, and has been integrated with **GitHub Actions** for seamless development and deployment.
 
 <div align="center">
     <img src="https://github.com/user-attachments/assets/d1c9f984-3e4d-49fd-9683-8ae03058dc47" alt="image" width="600" />
@@ -109,7 +109,7 @@ We also have **GitHub Actions** integrated for CI/CD, making deployments and upd
 
 ## 🌐 Live Demo on GitHub Pages
 
-The SilverBass app is deployed using **GitHub Pages**!  
+The A to Z app is deployed using **GitHub Pages**!  
 Check out the live version [**here**](https://ailynux.github.io/silverbass/).
 
  <div align="center">
