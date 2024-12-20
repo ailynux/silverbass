@@ -1,6 +1,4 @@
-<div align="center">
-
-# <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Headphone.png" alt="Headphone" width="65" height="65" />SilverBass - Weekly Music Playlist <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Speaker%20High%20Volume.png" alt="Speaker High Volume" width="65" height="65" />
+AtoZ🎊🍃 - Weekly Music Playlist <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Speaker%20High%20Volume.png" alt="Speaker High Volume" width="65" height="65" />
 
 ![Python](https://img.shields.io/badge/Built%20with-Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![YAML](https://img.shields.io/badge/Configuration-YAML-F3C613?style=for-the-badge&logo=yaml&logoColor=white)
@@ -15,11 +13,11 @@
 
 
 
-Welcome to **SilverBass**! <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Animals/Fish.png" alt="Fish" width="95" height="95" /> This is a **Weekly Music Playlist** web app, built with love using **Python**, **YAML**, **XML**, and **Docker**! It's hosted on **GitHub Pages**, utilizes **GitHub Workspaces**, and has been integrated with **GitHub Actions** for seamless development and deployment.
+Welcome to **AtoZ🎊🍃** 🎧This is a **Weekly Music Playlist** web app, built with love using **Python**, **YAML**, **XML**, and **Docker**! It's hosted on **GitHub Pages**, utilizes **GitHub Workspaces**, and has been integrated with **GitHub Actions** for seamless development and deployment.
 
 <div align="center">
-    <img src="https://github.com/user-attachments/assets/d1c9f984-3e4d-49fd-9683-8ae03058dc47" alt="image" width="600" />
-</div>
+<img src="https://photos.app.goo.gl/9R67nQLemiTJ8qgx7)
+
 
 ---
 
@@ -69,23 +67,23 @@ Welcome to **SilverBass**! <img src="https://raw.githubusercontent.com/Tarikul-I
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/username/silverbass.git
+   git clone https://github.com/username/AtoZ🎊🍃.git
    ```
 2. **Run locally using Docker:**
    ```bash
-   docker build -t silverbass .
+   docker build -t AtoZ🎊🍃 .
     docker run -p 8000:8000 silverbass
    ```
 3. **Open the app in your browser:**
    ```bash
    http://localhost:8000
    ```
-![SilverBass GIF](https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExdmlmZDhqamphZzA2dnh4dnFjN2t4bzA2dTF4ZTZtdnAyZTg4ZnFrNCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/QXwtfadqo7wbfmT46H/giphy.webp)
+![AtoZ🎊🍃 GIF](https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExdmlmZDhqamphZzA2dnh4dnFjN2t4bzA2dTF4ZTZtdnAyZTg4ZnFrNCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/QXwtfadqo7wbfmT46H/giphy.webp)
 
    
 ## 🎉 Follow Me and Get Updates!
 
-🌟 Don't forget to **star** this repository to get updates!
+🌟 Don't forget to **star🌟🌟🌟🌟🌟** this repository to get updates!
 
 - 💻 [GitHub](https://github.com/ailynux)
 - 👔 [LinkedIn](https://www.linkedin.com/in/ailyndiaz01)
@@ -96,7 +94,7 @@ Welcome to **SilverBass**! <img src="https://raw.githubusercontent.com/Tarikul-I
 ## 📦 Available on GitHub Marketplace
 
 This project is now live on the **GitHub Marketplace**! 🎉  
-Check it out [**here**](https://github.com/marketplace/actions/silverbass) and integrate it into your own projects.
+Check it out [**here**](https://github.com/marketplace/actions/AtoZ🎊🍃) and integrate it into your own projects.
 
 ---
 
