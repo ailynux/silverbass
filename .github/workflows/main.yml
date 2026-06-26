@@ -2,36 +2,40 @@ name: Deploy SilverBass Playlist
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   schedule:
-    - cron: '0 0 * * 1'  # Weekly build on Monday
+    - cron: '0 0 * * 1'  # Weekly rebuild, Mondays 00:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      # Checkout the repository
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
-      # Build the Docker image
-      - name: Build Docker Image
-        run: docker build -t silverbass-generator .
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
 
-      # Run the Docker container and mount the 'docs' folder
-      - name: Run Docker Container
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate site
+        run: python main.py
+
+      - name: Commit & deploy to GitHub Pages
         run: |
-          docker run -v ${{ github.workspace }}/docs:/app/docs silverbass-generator
-          echo "Checking files after Docker run:"
-          ls -la docs/
-
-      # Commit and push changes to GitHub Pages
-      - name: Deploy to GitHub Pages
-        run: |
-          git config --global user.email "you@example.com"
-          git config --global user.name "GitHub Action"
-          git add docs/index.html || echo "No changes to add"
-          git commit -m "Deploy SilverBass Playlist" || echo "No changes to commit"
-          git push || echo "No changes to push"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/index.html
+          if git diff --staged --quiet; then
+            echo "No changes to deploy."
+          else
+            git commit -m "Deploy SilverBass Playlist [skip ci]"
+            git push
+          fi
