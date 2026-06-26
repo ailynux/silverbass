@@ -25,18 +25,26 @@ SilverBass turns a simple `playlist.yml` file into a **gorgeous, fully-interacti
 
 ---
 
-## ✨ What it does
+## What it does
 
-- **🎛️ Built-in player** — click any track and a sticky "Now Playing" bar slides up with play/pause, previous/next, **shuffle**, **repeat**, autoplay-next, a scrubber, and a live **audio visualizer**. Powered by the YouTube IFrame API.
-- **🎬 Theater mode** — expand the player into a big cinematic video with the track title and an **Up Next** queue strip (press `t`).
-- **🖼️ Automatic cover art** — album/video thumbnails are pulled straight from each YouTube link. Just paste a URL.
-- **❤️ Likes that stick** — heart any track and it's saved in your browser, with a dedicated "Liked" filter.
-- **🔗 Shareable deep-links** — the Share button copies a link that opens the site *already cued to that song* (native share sheet on mobile).
-- **🔎 Live search & genre chips** — filter every song/artist as you type, or jump between playlists instantly.
-- **🐟 Underwater easter eggs** — a school of 3D silverbass swim by, bubbles drift up, and clicking a fish starts a "feeding frenzy".
-- **⌨️ Keyboard shortcuts** — `space`, `←/→`, `s`, `r`, `l` like, `c` copy link, `/` search, `?` help.
-- **💎 Premium UI** — animated aurora background, glassmorphism cards, per-playlist accent colors, fully responsive.
-- **🤖 Hands-off updates** — GitHub Actions rebuilds and redeploys the site on every push (and weekly).
+- **Built-in player** — click any track and a sticky "Now Playing" bar slides up with play/pause, previous/next, **shuffle**, **repeat**, autoplay-next, a scrubber, and a live **audio visualizer**. Powered by the YouTube IFrame API.
+- **Theater mode** — expand the player into a big cinematic video with the track title and an **Up Next** queue strip (press `t`).
+- **Automatic cover art** — album/video thumbnails are pulled straight from each YouTube link. Just paste a URL.
+- **Likes that stick** — heart any track and it's saved in your browser, with a dedicated "Liked" filter.
+- **Shareable deep-links** — the Share button copies a link that opens the site *already cued to that song* (native share sheet on mobile).
+- **Live search & genre chips** — filter every song/artist as you type, or jump between playlists instantly.
+- **Underwater easter eggs** — a school of 3D silverbass swim by, bubbles drift up, and clicking a fish starts a "feeding frenzy".
+- **Keyboard shortcuts** — `space`, `←/→`, `s`, `r`, `l` like, `c` copy link, `/` search, `?` help.
+- **Track of the Day** — a featured pick that changes daily (same for everyone), so there's always a reason to come back.
+- **Sleep timer** — auto-pause after 15/30/45/60 minutes for late-night listening.
+- **Color themes** — switch the whole vibe between Midnight, Sunset, Sakura, and Vapor palettes (your choice is remembered).
+- **Listening stats** — per-track play counts, a live "Replays" tally, and a "Your Top Tracks" recap of what you play most.
+- **Volume & mute** — in-player volume slider plus a one-tap mute (`m`).
+- **Resume last session** — reopen the site and your last track is cued up, ready to press play.
+- **Installable app (PWA)** — add SilverBass to your phone or desktop home screen; the app shell works offline.
+- **Japanese city-pop design** — drifting sakura petals, a giant 音楽 kanji motif, katakana branding, and a brush typeface.
+- **Premium UI** — animated aurora background, glassmorphism cards, per-playlist accent colors, fully responsive.
+- **Hands-off updates** — GitHub Actions rebuilds and redeploys the site on every push (and weekly).
 
 ---
 

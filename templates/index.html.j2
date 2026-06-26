@@ -28,6 +28,7 @@
     --accent: #7c5cff;
     --player-h: 104px;
     --radius: 18px;
+    --b1: #7c5cff; --b2: #ff5c8a; --b3: #22c98b; --b4: #3bc9ff;
   }
 
   * { box-sizing: border-box; }
@@ -56,10 +57,10 @@
     mix-blend-mode: screen;
     animation: drift 22s ease-in-out infinite;
   }
-  .aurora .b1 { background: #7c5cff; top: -18%; left: -10%; }
-  .aurora .b2 { background: #ff5c8a; top: 20%; right: -15%; animation-delay: -6s; }
-  .aurora .b3 { background: #22c98b; bottom: -25%; left: 15%; animation-delay: -12s; }
-  .aurora .b4 { background: #3bc9ff; bottom: -10%; right: 10%; animation-delay: -3s; }
+  .aurora .b1 { background: var(--b1); top: -18%; left: -10%; }
+  .aurora .b2 { background: var(--b2); top: 20%; right: -15%; animation-delay: -6s; }
+  .aurora .b3 { background: var(--b3); bottom: -25%; left: 15%; animation-delay: -12s; }
+  .aurora .b4 { background: var(--b4); bottom: -10%; right: 10%; animation-delay: -3s; }
   .grain { position: fixed; inset: 0; z-index: -1; opacity: 0.05;
     background-image: radial-gradient(rgba(255,255,255,0.6) 1px, transparent 1px);
     background-size: 3px 3px; pointer-events: none; }
@@ -163,10 +164,12 @@
   .search svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); }
   .chips { display: flex; gap: 8px; flex-wrap: wrap; }
   .chip {
+    display: inline-flex; align-items: center; gap: 6px;
     border: 1px solid var(--border); background: var(--panel); color: var(--muted);
     padding: 9px 15px; border-radius: 999px; font-size: 0.85rem; font-weight: 600;
     cursor: pointer; transition: all .18s; white-space: nowrap;
   }
+  .chip svg { flex: none; }
   .chip:hover { color: var(--text); border-color: rgba(255,255,255,0.25); }
   .chip.active { background: #fff; color: #0a0a12; border-color: #fff; }
   .shuffle-all {
@@ -180,7 +183,7 @@
   /* ---------- playlist sections ---------- */
   section.set { margin-top: 46px; scroll-margin-top: 130px; }
   .set-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 20px; flex-wrap: wrap; }
-  .set-head .emoji { font-size: 1.9rem; }
+  .set-head .emoji { display: inline-flex; align-items: center; color: var(--card-accent, var(--accent)); }
   .set-head h2 { font-family: 'Space Grotesk', sans-serif; font-size: clamp(1.5rem, 4vw, 2.2rem); margin: 0; }
   .set-head .genre { color: var(--muted); font-size: 0.85rem; padding: 4px 12px; border: 1px solid var(--border);
     border-radius: 999px; }
@@ -580,6 +583,18 @@
   #sleepBtn.active { border-color: var(--accent); color: var(--accent); }
   #installBtn { display: none; }
 
+  /* ---------- your top tracks recap ---------- */
+  .recap-row { display: flex; align-items: center; gap: 12px; padding: 9px 6px;
+    border-top: 1px solid rgba(255,255,255,0.06); cursor: pointer; border-radius: 10px; }
+  .recap-row:hover { background: var(--panel); }
+  .recap-row .rank { width: 24px; text-align: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700; color: var(--accent); }
+  .recap-row img { width: 50px; height: 31px; object-fit: cover; border-radius: 6px; flex: none; }
+  .recap-row .meta { min-width: 0; flex: 1; }
+  .recap-row .t { font-size: 0.92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .recap-row .a { font-size: 0.78rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .recap-row .cnt { font-size: 0.8rem; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .recap-empty { color: var(--muted); text-align: center; padding: 26px 0; }
+
   /* ---------- back to top ---------- */
   .to-top {
     position: fixed; right: 18px; bottom: calc(var(--player-h) + 28px); z-index: 55;
@@ -598,6 +613,20 @@
 </style>
 </head>
 <body>
+  {%- set theme_icon_paths = {
+    "Chill Vibes": '<path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/>',
+    "Night Drive": '<path d="M5 11l1.4-4.2A2 2 0 0 1 8.3 5.4h7.4a2 2 0 0 1 1.9 1.4L19 11"/><path d="M4 11h16v5a1 1 0 0 1-1 1h-1.3a1.7 1.7 0 0 1-3.4 0H9.7a1.7 1.7 0 0 1-3.4 0H5a1 1 0 0 1-1-1z"/>',
+    "Feel Good": '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/>',
+    "On Repeat": '<path d="M12 3c.6 2.4-1.4 3.6-1.4 5.6a3 3 0 0 0 5.9.6c1.3 1.2 2 2.9 2 4.8a6.5 6.5 0 0 1-13 0c0-4 3.1-6.4 6.5-11z"/>',
+    "Darkwave": '<path d="M4 12h2l2-6 4 14 3-9 2 4h3"/>',
+    "Dreampop & Lo-Fi": '<path d="M2 8c2 2.2 4.5 2.2 6.5 0s4.5-2.2 6.5 0 4.5 2.2 6.5 0"/><path d="M2 14c2 2.2 4.5 2.2 6.5 0s4.5-2.2 6.5 0 4.5 2.2 6.5 0"/>',
+    "Wildcards": '<path d="M12 4l1.7 4.6L18 10l-4.3 1.4L12 16l-1.7-4.6L6 10l4.3-1.4z"/>'
+  } -%}
+  {%- set default_icon = '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>' -%}
+  {%- macro theme_icon(theme, size) -%}
+  <svg width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{{ (theme_icon_paths[theme] if theme in theme_icon_paths else default_icon) | safe }}</svg>
+  {%- endmacro -%}
+
   <div class="aurora"><span class="b1"></span><span class="b2"></span><span class="b3"></span><span class="b4"></span></div>
   <div class="grain"></div>
 
@@ -635,20 +664,35 @@
       </div>
       <div class="chips" id="chips">
         <button class="chip active" data-filter="all">All</button>
-        <button class="chip" data-filter="liked">❤️ Liked</button>
+        <button class="chip" data-filter="liked"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg> Liked</button>
         {% for p in playlists %}
-        <button class="chip" data-filter="{{ p.slug }}">{{ p.emoji }} {{ p.theme }}</button>
+        <button class="chip" data-filter="{{ p.slug }}">{{ theme_icon(p.theme, 14) }} {{ p.theme }}</button>
         {% endfor %}
       </div>
       <button class="ghost-btn" id="surprise" title="Play a random track">
-        🎲 Surprise me
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.6 4.4L18 8l-4.4 1.6L12 14l-1.6-4.4L6 8l4.4-1.6L12 2z"/><path d="M19 14l.8 2.2L22 17l-2.2.8L19 20l-.8-2.2L16 17l2.2-.8L19 14z"/></svg>
+        Surprise me
       </button>
       <button class="shuffle-all" id="shuffleAll">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="m15 15 6 6"/><path d="M4 4l5 5"/></svg>
         Shuffle
       </button>
-      <button class="ghost-btn" id="sleepBtn" title="Sleep timer — auto-pause">🌙 Sleep</button>
-      <button class="ghost-btn" id="installBtn" title="Install SilverBass">⬇️ Install</button>
+      <button class="ghost-btn" id="sleepBtn" title="Sleep timer — auto-pause">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+        <span id="sleepLabel">Sleep</span>
+      </button>
+      <button class="ghost-btn" id="themeBtn" title="Change color theme">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c1.4 0 2.5-1.1 2.5-2.5 0-.6-.2-1.1-.6-1.5-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2H17c2.8 0 5-2.2 5-5 0-4.7-4.5-7.7-10-7.7z"/><circle cx="6.5" cy="11.5" r="1.4" fill="currentColor"/><circle cx="9.5" cy="7.5" r="1.4" fill="currentColor"/><circle cx="14.5" cy="7.5" r="1.4" fill="currentColor"/><circle cx="17.5" cy="11.5" r="1.4" fill="currentColor"/></svg>
+        <span id="themeLabel">Midnight</span>
+      </button>
+      <button class="ghost-btn" id="topBtn" title="Your most-played tracks">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="13"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="9"/></svg>
+        Top
+      </button>
+      <button class="ghost-btn" id="installBtn" title="Install SilverBass">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+        Install
+      </button>
     </div>
 
     <!-- track of the day -->
@@ -678,7 +722,7 @@
     <section class="set" id="{{ p.slug }}" data-slug="{{ p.slug }}">
       <div class="wave-sep" style="--c: {{ p.accent }}"></div>
       <div class="set-head" style="--card-accent: {{ p.accent }}">
-        <span class="emoji">{{ p.emoji }}</span>
+        <span class="emoji">{{ theme_icon(p.theme, 24) }}</span>
         <h2>{{ p.theme }}</h2>
         <span class="jp-tag">{{ jp_names[p.theme] | default("音楽") }}</span>
         {% if p.genre %}<span class="genre">{{ p.genre }}</span>{% endif %}
@@ -712,7 +756,7 @@
     </section>
     {% endfor %}
 
-    <div class="empty" id="empty">No tracks match that search. 🎧</div>
+    <div class="empty" id="empty">No tracks match that search.</div>
 
     <footer>
       <div class="socials">
@@ -844,12 +888,22 @@
   <!-- toast -->
   <div class="toast" id="toast"></div>
 
+  <!-- your top tracks recap -->
+  <div class="help" id="recap">
+    <div class="help-card">
+      <h3>Your Top Tracks</h3>
+      <p class="sub">あなたの愛聴曲 · the songs you keep coming back to</p>
+      <div id="recapList"></div>
+      <button class="help-close" id="recapClose">Close</button>
+    </div>
+  </div>
+
   <!-- keyboard shortcut helper -->
   <button class="help-fab" id="helpFab" title="Keyboard shortcuts (?)">?</button>
   <div class="help" id="help">
     <div class="help-card">
       <h3>Keyboard shortcuts</h3>
-      <p class="sub">SilverBass moves faster with keys. 🎧</p>
+      <p class="sub">SilverBass moves faster with keys.</p>
       <div class="help-row"><b>Play / pause</b> <kbd>space</kbd></div>
       <div class="help-row"><b>Next track</b> <kbd>→</kbd></div>
       <div class="help-row"><b>Previous track</b> <kbd>←</kbd></div>
@@ -874,6 +928,7 @@
   let current = -1;
   let shuffle = false, repeat = false;
   let player = null, ready = false, pendingId = null, ticker = null;
+  let resumeIdx = -1;
 
   const $ = id => document.getElementById(id);
   const fmt = s => { s = Math.floor(s||0); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); };
@@ -974,7 +1029,10 @@
   const prev = () => step(-1);
 
   function toggle() {
-    if (!player || current < 0) { const v = visibleOrder(); if (v.length) play(v[0]); return; }
+    if (!player || current < 0) {
+      if (resumeIdx >= 0) { const r = resumeIdx; resumeIdx = -1; play(r); return; }
+      const v = visibleOrder(); if (v.length) play(v[0]); return;
+    }
     const st = player.getPlayerState();
     if (st === YT.PlayerState.PLAYING) player.pauseVideo(); else player.playVideo();
   }
@@ -1027,7 +1085,7 @@
   /* ---------- keyboard ---------- */
   document.addEventListener('keydown', e => {
     if (e.target.tagName === 'INPUT') { if (e.key === 'Escape') e.target.blur(); return; }
-    if (e.key === 'Escape') { $('help').classList.remove('show'); closeTheater(); return; }
+    if (e.key === 'Escape') { $('help').classList.remove('show'); $('recap').classList.remove('show'); closeTheater(); return; }
     if (e.key === '?' || (e.shiftKey && e.key === '/')) { e.preventDefault(); $('help').classList.toggle('show'); }
     else if (e.key === '/') { e.preventDefault(); search.focus(); }
     else if (e.code === 'Space') { e.preventDefault(); toggle(); }
@@ -1077,7 +1135,7 @@
     toggleLike(btn.dataset.id);
     const liked = isLiked(btn.dataset.id);
     if (liked) { const r = btn.getBoundingClientRect(); heartBurst(r.left + r.width / 2, r.top + r.height / 2); }
-    showToast(liked ? '❤️ Added to Liked' : 'Removed from Liked', '', '');
+    showToast(liked ? 'Added to Liked' : 'Removed from Liked', '', '');
   }));
   $('btnLike').onclick = () => {
     if (current < 0) return;
@@ -1088,12 +1146,12 @@
 
   /* ---------- share / deep links ---------- */
   function shareCurrent() {
-    if (current < 0) { showToast('Pick a track first 🎧', '', ''); return; }
+    if (current < 0) { showToast('Pick a track first', '', ''); return; }
     const card = cards[current];
     const url = location.origin + location.pathname + '?t=' + card.dataset.id;
     const data = { title: card.dataset.title + ' — ' + card.dataset.artist, text: 'Vibe to this on SilverBass 🎧', url };
     if (navigator.share) { navigator.share(data).catch(() => {}); }
-    else if (navigator.clipboard) { navigator.clipboard.writeText(url).then(() => showToast('🔗 Link copied — share the vibe!', '', '')); }
+    else if (navigator.clipboard) { navigator.clipboard.writeText(url).then(() => showToast('Link copied — share the vibe', '', '')); }
     else { showToast('Share link', url, ''); }
   }
   $('btnShare').onclick = shareCurrent;
@@ -1103,7 +1161,7 @@
     const v = visibleOrder();
     const pool = v.length ? v : cards.map((_, i) => i);
     play(pool[Math.floor(Math.random() * pool.length)]);
-    showToast('🎲 Surprise pick!', '', '');
+    showToast('Surprise pick', '', '');
   };
 
   /* ---------- visualizer bars ---------- */
@@ -1162,7 +1220,7 @@
       fish.style.animationDuration = (parseFloat(fish.dataset.normDur) / 3.2) + 's';
     });
     for (let i = 0; i < 16; i++) setTimeout(() => makeBubble(true), i * 55);
-    showToast('🐟 Feeding frenzy!', 'The bass picked a track for you', '');
+    showToast('Feeding frenzy', 'The bass picked a track for you', '');
     const v = visibleOrder();
     const pool = v.length ? v : cards.map((_, i) => i);
     play(pool[Math.floor(Math.random() * pool.length)]);
@@ -1309,7 +1367,7 @@
     muted ? player.mute() : player.unMute();
     $('btnMute').classList.toggle('active', muted);
     setMuteIcon();
-    showToast(muted ? '🔇 Muted' : '🔊 Sound on', '', '');
+    showToast(muted ? 'Muted' : 'Sound on', '', '');
   }
   $('btnMute').onclick = toggleMute;
 
@@ -1456,15 +1514,15 @@
     clearTimeout(sleepT);
     if (sleepMin > 0) {
       $('sleepBtn').classList.add('active');
-      $('sleepBtn').textContent = '🌙 ' + sleepMin + 'm';
-      showToast('🌙 Sleep timer set', sleepMin + ' minutes', '');
+      $('sleepLabel').textContent = sleepMin + 'm';
+      showToast('Sleep timer set', sleepMin + ' minutes', '');
       sleepT = setTimeout(() => {
         if (player && player.pauseVideo) player.pauseVideo();
-        $('sleepBtn').classList.remove('active'); $('sleepBtn').textContent = '🌙 Sleep'; sleepMin = 0;
-        showToast('🌙 Oyasumi — good night', 'Music paused', '');
+        $('sleepBtn').classList.remove('active'); $('sleepLabel').textContent = 'Sleep'; sleepMin = 0;
+        showToast('Oyasumi — good night', 'Music paused', '');
       }, sleepMin * 60000);
     } else {
-      $('sleepBtn').classList.remove('active'); $('sleepBtn').textContent = '🌙 Sleep';
+      $('sleepBtn').classList.remove('active'); $('sleepLabel').textContent = 'Sleep';
       showToast('Sleep timer off', '', '');
     }
   };
@@ -1481,13 +1539,86 @@
   };
   window.addEventListener('appinstalled', () => {
     $('installBtn').style.display = 'none';
-    showToast('🐟 Installed!', 'SilverBass added to your device', '');
+    showToast('Installed', 'SilverBass added to your device', '');
   });
 
   /* ---------- service worker (offline support) ---------- */
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
   }
+
+  /* ---------- color theme switcher ---------- */
+  const THEMES = [
+    { id: 'midnight', name: 'Midnight', b: ['#7c5cff', '#ff5c8a', '#22c98b', '#3bc9ff'], accent: '#7c5cff' },
+    { id: 'sunset',   name: 'Sunset',   b: ['#ff8a4c', '#ff5c8a', '#ffd24c', '#a05cff'], accent: '#ff7a4c' },
+    { id: 'sakura',   name: 'Sakura',   b: ['#ff9ec0', '#ff5c8a', '#b9a7ff', '#ffd1e6'], accent: '#ff6fa5' },
+    { id: 'vapor',    name: 'Vapor',    b: ['#3bc9ff', '#b15cff', '#22c98b', '#ff5c8a'], accent: '#3bc9ff' }
+  ];
+  let themeIdx = 0;
+  function applyTheme(i, announce) {
+    const t = THEMES[i]; themeIdx = i;
+    const r = document.documentElement.style;
+    r.setProperty('--b1', t.b[0]); r.setProperty('--b2', t.b[1]);
+    r.setProperty('--b3', t.b[2]); r.setProperty('--b4', t.b[3]);
+    if (current < 0) r.setProperty('--accent', t.accent);
+    const mc = document.querySelector('meta[name="theme-color"]'); if (mc) mc.setAttribute('content', t.accent);
+    $('themeLabel').textContent = t.name;
+    try { localStorage.setItem('sb_theme', t.id); } catch (e) {}
+    if (announce) showToast('Theme: ' + t.name, '', '');
+  }
+  (function () {
+    let saved = 0;
+    try { const k = THEMES.findIndex(x => x.id === localStorage.getItem('sb_theme')); if (k >= 0) saved = k; } catch (e) {}
+    applyTheme(saved, false);
+  })();
+  $('themeBtn').onclick = () => applyTheme((themeIdx + 1) % THEMES.length, true);
+
+  /* ---------- your top tracks recap ---------- */
+  function openRecap() {
+    const list = $('recapList'); list.innerHTML = '';
+    const entries = Object.entries(plays).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]).slice(0, 8);
+    if (!entries.length) {
+      const d = document.createElement('div'); d.className = 'recap-empty';
+      d.textContent = 'No plays yet — start listening and your top tracks will show up here.';
+      list.appendChild(d);
+    } else {
+      entries.forEach(([id, n], i) => {
+        const idx = cards.findIndex(c => c.dataset.id === id);
+        if (idx < 0) return;
+        const card = cards[idx];
+        const row = document.createElement('div'); row.className = 'recap-row';
+        const rank = document.createElement('div'); rank.className = 'rank'; rank.textContent = i + 1;
+        const img = document.createElement('img'); img.src = card.dataset.cover || ''; img.alt = '';
+        const meta = document.createElement('div'); meta.className = 'meta';
+        const t = document.createElement('div'); t.className = 't'; t.textContent = card.dataset.title;
+        const a = document.createElement('div'); a.className = 'a'; a.textContent = card.dataset.artist;
+        meta.append(t, a);
+        const cnt = document.createElement('div'); cnt.className = 'cnt'; cnt.textContent = n + (n === 1 ? ' play' : ' plays');
+        row.append(rank, img, meta, cnt);
+        row.onclick = () => { play(idx); $('recap').classList.remove('show'); };
+        list.appendChild(row);
+      });
+    }
+    $('recap').classList.add('show');
+  }
+  $('topBtn').onclick = openRecap;
+  $('recapClose').onclick = () => $('recap').classList.remove('show');
+  $('recap').addEventListener('click', e => { if (e.target === $('recap')) $('recap').classList.remove('show'); });
+
+  /* ---------- resume last session ---------- */
+  (function restore() {
+    if (new URLSearchParams(location.search).get('t')) return;
+    let last = null; try { last = localStorage.getItem('sb_last'); } catch (e) {}
+    if (!last) return;
+    const idx = cards.findIndex(c => c.dataset.id === last);
+    if (idx < 0) return;
+    resumeIdx = idx;
+    const card = cards[idx];
+    $('nbTitle').textContent = card.dataset.title;
+    $('nbArtist').textContent = 'Press play to resume';
+    $('nbCover').src = card.dataset.cover || '';
+    $('nowbar').classList.add('show');
+  })();
 
   /* ---------- deep link: ?t=VIDEO_ID auto-plays ---------- */
   (function () {
