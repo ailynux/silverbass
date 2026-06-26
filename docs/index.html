@@ -8,9 +8,15 @@
 <meta property="og:title" content="SilverBass — Weekly Music Playlist" />
 <meta property="og:description" content="Weekly music, hand-picked. Press play." />
 <meta property="og:type" content="website" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🐟%3C/text%3E%3C/svg%3E" />
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#7c5cff" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="SilverBass" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=Yuji+Syuku&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet" />
 <style>
   :root {
     --bg: #000000;
@@ -130,7 +136,7 @@
     animation: shimmer 7s linear infinite;
   }
   @keyframes shimmer { to { background-position: 220% center; } }
-  .tagline { color: var(--muted); font-size: clamp(1rem, 2.2vw, 1.3rem); max-width: 540px; margin: 0 auto; }
+  .tagline { color: var(--muted); font-size: clamp(1rem, 2.2vw, 1.3rem); max-width: 540px; margin: 22px auto 0; }
 
   .stats { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 30px; }
   .stat { background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
@@ -217,7 +223,8 @@
 
   .empty { text-align: center; color: var(--muted); padding: 60px 0; display: none; }
 
-  footer { text-align: center; padding: 60px 0 20px; color: var(--muted); }
+  footer { text-align: center; padding: 60px 0 20px; color: #e9e9f2; }
+  footer p { color: #e9e9f2; }
   footer a { color: var(--text); text-decoration: none; border-bottom: 1px solid var(--border); }
   footer a:hover { border-color: var(--accent); }
   footer .socials { display: flex; gap: 14px; justify-content: center; margin-bottom: 18px; }
@@ -342,11 +349,262 @@
     background: rgba(18,18,28,0.9); color: var(--text); backdrop-filter: blur(10px); font-size: 1rem;
     transition: all .15s; box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
   .help-fab:hover { border-color: var(--accent); transform: translateY(-2px); }
+
+  /* ---------- theater (expanded player) ---------- */
+  .art-expand {
+    position: absolute; top: 8px; right: 8px; z-index: 5;
+    width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center;
+    background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.25); color: #fff;
+    cursor: pointer; opacity: 0; transition: opacity .2s, transform .15s;
+  }
+  .nb-art:hover .art-expand { opacity: 1; }
+  .art-expand:hover { transform: scale(1.1); }
+
+  #theater {
+    position: fixed; inset: 0; z-index: 80; background: rgba(0,0,0,0.78);
+    backdrop-filter: blur(16px); opacity: 0; pointer-events: none; transition: opacity .3s;
+  }
+  body.theater-open #theater { opacity: 1; pointer-events: auto; }
+
+  /* the unified modal card */
+  .theater-modal {
+    position: fixed; z-index: 82; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: min(840px, 94vw); max-height: 92vh; display: flex; flex-direction: column;
+    background: linear-gradient(180deg, #14141f, #0b0b12); border: 1px solid var(--border);
+    border-radius: 20px; box-shadow: 0 40px 120px rgba(0,0,0,0.75);
+    opacity: 0; pointer-events: none; transition: opacity .3s ease;
+  }
+  body.theater-open .theater-modal { opacity: 1; pointer-events: auto; }
+
+  .tm-screen { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000;
+    border-radius: 20px 20px 0 0; overflow: hidden; flex: none; }
+  /* the live video is positioned over .tm-screen by JS */
+  body.theater-open .nb-art {
+    z-index: 83; border-radius: 20px 20px 0 0; box-shadow: none; pointer-events: auto;
+  }
+
+  .tm-body { padding: 18px 24px 22px; overflow-y: auto; }
+  .tm-info .t { font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; font-weight: 700; line-height: 1.2; }
+  .tm-info .a { color: var(--muted); margin-top: 3px; }
+
+  .tm-progress { height: 6px; background: rgba(255,255,255,0.12); border-radius: 4px; margin: 18px 0 7px; cursor: pointer; }
+  .tm-progress .fill { height: 100%; width: 0%; border-radius: 4px; background: linear-gradient(90deg, var(--accent), #ff8fb3); }
+  .tm-times { display: flex; justify-content: space-between; color: var(--muted); font-size: 0.78rem; font-variant-numeric: tabular-nums; }
+
+  .tm-controls { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 16px 0 4px; }
+
+  .tm-up { margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px; }
+  .tm-up h4 { margin: 0 0 8px; font-size: 0.74rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+  .tm-list { display: flex; flex-direction: column; gap: 2px; max-height: 220px; overflow-y: auto; }
+  .tm-row { display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 10px; cursor: pointer; transition: background .15s; }
+  .tm-row:hover { background: var(--panel); }
+  .tm-row img { width: 56px; height: 34px; object-fit: cover; border-radius: 6px; flex: none; }
+  .tm-row .meta { min-width: 0; }
+  .tm-row .t { font-size: 0.92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tm-row .a { font-size: 0.78rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  #theaterClose {
+    position: fixed; top: 18px; right: 18px; z-index: 90; width: 44px; height: 44px; border-radius: 50%;
+    display: none; place-items: center; cursor: pointer; color: #fff;
+    background: rgba(20,20,30,0.92); border: 1px solid rgba(255,255,255,0.22); transition: all .15s;
+  }
+  body.theater-open #theaterClose { display: grid; }
+  #theaterClose:hover { border-color: var(--accent); transform: rotate(90deg); }
+  body.theater-open .help-fab { display: none; }
+
+  /* hide the mini bar chrome while in theater, but lift the live video above the modal */
+  body.theater-open .nowbar { background: transparent; border: none; box-shadow: none; pointer-events: none; z-index: 84; }
+  body.theater-open .nowbar .nb-progress,
+  body.theater-open .nowbar .nb-info,
+  body.theater-open .nowbar .nb-controls,
+  body.theater-open .nowbar .nb-time,
+  body.theater-open .nowbar .viz { display: none; }
+
+  /* ---------- "music flow" intro animation over the video ---------- */
+  #stageLayer { position: fixed; z-index: 86; display: none; pointer-events: none; border-radius: 20px 20px 0 0; overflow: hidden; }
+  body.theater-open #stageLayer { display: block; }
+
+  #tmViz { position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: opacity .4s; }
+  #tmViz.show { opacity: 1; pointer-events: auto; }
+  #vizBg { position: absolute; inset: 0; background-size: cover; background-position: center;
+    filter: blur(34px) brightness(.42) saturate(1.3); transform: scale(1.15); }
+  #tmViz .glow { position: absolute; inset: 0;
+    background: radial-gradient(circle at 50% 45%, rgba(0,0,0,0) 30%, rgba(0,0,0,.55) 100%); }
+  .viz-flow { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 4px; padding: 0 8%; }
+  .viz-flow i { flex: 1; max-width: 10px; height: 12%; border-radius: 8px;
+    background: linear-gradient(180deg, var(--accent), #ff8fb3);
+    box-shadow: 0 0 12px var(--accent); animation: flowBar 1s ease-in-out infinite; }
+  @keyframes flowBar { 0%,100% { height: 10%; } 50% { height: 72%; } }
+  .viz-np { position: absolute; top: 16px; left: 0; right: 0; text-align: center; color: #fff;
+    font-size: .76rem; letter-spacing: .16em; text-transform: uppercase; opacity: .85;
+    display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .viz-np .pip { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 1.6s infinite; }
+  .viz-watch { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); pointer-events: auto;
+    display: inline-flex; align-items: center; gap: 8px; cursor: pointer; border: none;
+    background: rgba(255,255,255,0.95); color: #0a0a12; font-weight: 700; font-size: .92rem;
+    padding: 11px 20px; border-radius: 999px; box-shadow: 0 10px 30px rgba(0,0,0,.4); transition: transform .15s; }
+  .viz-watch:hover { transform: translateX(-50%) scale(1.05); }
+  #vizShow { position: absolute; top: 12px; left: 12px; pointer-events: auto; display: none;
+    align-items: center; gap: 7px; cursor: pointer; border: 1px solid rgba(255,255,255,0.25);
+    background: rgba(0,0,0,0.55); color: #fff; font-weight: 600; font-size: .8rem;
+    padding: 8px 13px; border-radius: 999px; backdrop-filter: blur(8px); }
+  #vizShow:hover { border-color: var(--accent); }
+
+  /* ---------- 日本 — Japanese city-pop vibe ---------- */
+  :root { --jp-brush: 'Yuji Syuku', serif; --jp-sans: 'Zen Kaku Gothic New', sans-serif; }
+
+  /* giant vertical kanji watermark behind everything */
+  .kanji-bg {
+    position: fixed; z-index: 0; top: 50%; right: 1.5vw; transform: translateY(-50%);
+    writing-mode: vertical-rl; font-family: var(--jp-brush);
+    font-size: 34vh; line-height: 0.9; letter-spacing: 0.04em;
+    color: rgba(255,255,255,0.038); white-space: nowrap;
+    pointer-events: none; user-select: none;
+    text-shadow: 0 0 60px rgba(124,92,255,0.12);
+  }
+  .kanji-bg.left { right: auto; left: 1.5vw; color: rgba(255,143,179,0.03); }
+  @media (max-width: 720px) { .kanji-bg { font-size: 26vh; right: -3vw; } .kanji-bg.left { display: none; } }
+
+  /* falling sakura petals */
+  .sakura { position: fixed; inset: 0; z-index: 2; overflow: hidden; pointer-events: none; }
+  .petal {
+    position: absolute; top: -8vh; width: 13px; height: 13px; opacity: 0;
+    background: radial-gradient(circle at 30% 28%, #ffe1ee, #ff9ec0 68%, #ff7aa8);
+    border-radius: 13px 1px 13px 1px;
+    filter: drop-shadow(0 2px 4px rgba(255,143,179,0.35));
+    animation: fall linear infinite;
+  }
+  @keyframes fall {
+    0%   { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
+    12%  { opacity: 0.9; }
+    100% { transform: translateY(112vh) translateX(14vw) rotate(560deg); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) { .petal { display: none; } }
+
+  /* hero japanese branding */
+  .jp-brand {
+    font-family: var(--jp-brush); color: var(--muted);
+    letter-spacing: 0.34em; font-size: clamp(0.95rem, 2.4vw, 1.4rem);
+    margin: 12px 0 0; opacity: 0.9;
+  }
+  .jp-brand .stamp {
+    color: #0a0a12; background: linear-gradient(120deg, #ff8fb3, #b9a7ff);
+    padding: 2px 12px 4px; border-radius: 8px; margin-left: 4px; letter-spacing: 0.18em;
+    box-shadow: 0 6px 18px rgba(255,143,179,0.3);
+  }
+  .eyebrow .jp { font-family: var(--jp-sans); letter-spacing: 0.1em; }
+
+  /* japanese label on each playlist section */
+  .set-head .jp-tag {
+    font-family: var(--jp-brush); color: var(--card-accent, var(--accent));
+    font-size: 1.05rem; letter-spacing: 0.14em; opacity: 0.85; margin-left: 2px;
+  }
+
+  /* now-playing visualizer label in JP */
+  .viz-np .jp { font-family: var(--jp-sans); letter-spacing: 0.22em; }
+
+  /* ---------- scroll reveal + cursor spotlight on cards ---------- */
+  .card { opacity: 0; transform: translateY(20px); }
+  .card.in { opacity: 1; transform: none; transition: opacity .55s ease, transform .55s cubic-bezier(.2,.7,.3,1); }
+  .card::before {
+    content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; border-radius: var(--radius);
+    background: radial-gradient(220px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.16), transparent 62%);
+    transition: opacity .25s; mix-blend-mode: soft-light;
+  }
+  .card:hover::before { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { .card { opacity: 1; transform: none; } }
+
+  /* ---------- heart burst on like ---------- */
+  .heart-burst { position: fixed; z-index: 95; pointer-events: none; left: 0; top: 0; }
+  .heart-burst span { position: absolute; font-size: 14px; animation: hb .9s ease-out forwards; }
+  @keyframes hb {
+    0%   { transform: translate(0,0) scale(.4); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) scale(1.1); opacity: 0; }
+  }
+
+  /* ---------- seigaiha wave divider between sections ---------- */
+  .wave-sep {
+    height: 24px; margin: 40px 0 2px;
+    background-image: radial-gradient(circle at 50% 100%, transparent 8px,
+      var(--c, var(--accent)) 9px, var(--c, var(--accent)) 10px, transparent 11px);
+    background-size: 26px 24px; background-repeat: repeat-x; opacity: 0.5;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
+            mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent);
+  }
+  section.set:first-of-type .wave-sep { display: none; }
+
+  /* ---------- per-track play-count badge ---------- */
+  .pcount {
+    position: absolute; top: 10px; left: 10px; z-index: 3;
+    font-size: 0.72rem; font-weight: 700; padding: 3px 9px; border-radius: 999px;
+    background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.2); color: #fff;
+    backdrop-filter: blur(6px); display: none; align-items: center; gap: 4px;
+  }
+  .pcount.show { display: inline-flex; }
+
+  /* ---------- pulse ring on the play button while playing ---------- */
+  .nowbar.playing .nb-play { box-shadow: 0 0 0 0 rgba(255,255,255,0.5); animation: ring 1.8s ease-out infinite; }
+  @keyframes ring { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.45); } 100% { box-shadow: 0 0 0 14px rgba(255,255,255,0); } }
+
+  /* ---------- track of the day ---------- */
+  .totd {
+    position: relative; margin: 34px 0 6px; border-radius: 20px; overflow: hidden;
+    border: 1px solid var(--border); background: var(--panel); display: flex; align-items: stretch;
+    min-height: 150px; cursor: pointer; transition: transform .2s, box-shadow .2s, border-color .2s;
+  }
+  .totd:hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+  .totd-art { position: relative; width: 250px; flex: none; background: #15151f; }
+  .totd-art img { width: 100%; height: 100%; object-fit: cover; }
+  .totd-art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent 40%, #0c0c14 98%); }
+  .totd-body { padding: 22px 28px; display: flex; flex-direction: column; justify-content: center; gap: 5px; min-width: 0; z-index: 1; }
+  .totd-kicker { font-family: var(--jp-brush); letter-spacing: 0.2em; color: var(--accent); font-size: 0.92rem;
+    display: flex; align-items: center; gap: 9px; }
+  .totd-kicker .pip { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 1.8s infinite; }
+  .totd-title { font-family: 'Space Grotesk', sans-serif; font-size: clamp(1.4rem, 3.5vw, 2rem); font-weight: 700;
+    line-height: 1.12; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .totd-artist { color: var(--muted); }
+  .totd-play { margin-top: 12px; align-self: flex-start; display: inline-flex; align-items: center; gap: 8px;
+    background: #fff; color: #0a0a12; font-weight: 700; border: none; border-radius: 999px; padding: 11px 20px; cursor: pointer; transition: transform .15s; }
+  .totd-play:hover { transform: scale(1.05); }
+  @media (max-width: 560px) { .totd-art { width: 120px; } .totd-body { padding: 16px; } }
+
+  /* ---------- volume slider ---------- */
+  .vol { width: 0; opacity: 0; transition: width .2s, opacity .2s; -webkit-appearance: none; appearance: none;
+    height: 4px; border-radius: 3px; background: rgba(255,255,255,0.22); cursor: pointer; align-self: center; }
+  .nb-controls:hover .vol, .vol:focus { width: 72px; opacity: 1; }
+  .vol::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: #fff; }
+  .vol::-moz-range-thumb { width: 12px; height: 12px; border: none; border-radius: 50%; background: #fff; }
+  @media (max-width: 720px) { .vol { display: none; } }
+
+  /* ---------- sleep timer + install buttons ---------- */
+  #sleepBtn.active { border-color: var(--accent); color: var(--accent); }
+  #installBtn { display: none; }
+
+  /* ---------- back to top ---------- */
+  .to-top {
+    position: fixed; right: 18px; bottom: calc(var(--player-h) + 28px); z-index: 55;
+    width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; cursor: pointer;
+    background: rgba(18,18,28,0.9); border: 1px solid var(--border); color: var(--text);
+    backdrop-filter: blur(10px); box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    opacity: 0; transform: translateY(12px); pointer-events: none; transition: all .25s;
+  }
+  .to-top.show { opacity: 1; transform: none; pointer-events: auto; }
+  .to-top:hover { border-color: var(--accent); transform: translateY(-2px); }
+
+  @media (max-width: 720px) {
+    .tm-info .t { font-size: 1.2rem; }
+    .tm-body { padding: 14px 16px 18px; }
+  }
 </style>
 </head>
 <body>
   <div class="aurora"><span class="b1"></span><span class="b2"></span><span class="b3"></span><span class="b4"></span></div>
   <div class="grain"></div>
+
+  <!-- 音楽 — giant kanji watermark + drifting sakura -->
+  <div class="kanji-bg" aria-hidden="true">音楽</div>
+  <div class="kanji-bg left" aria-hidden="true">音</div>
+  <div class="sakura" id="sakura" aria-hidden="true"></div>
 
   <!-- school of swimming 3D silverbass -->
   <div class="ocean" id="ocean">
@@ -359,13 +617,14 @@
 
   <div class="wrap">
     <header class="hero">
-      <span class="eyebrow"><span class="dot"></span> Updated June 26, 2026</span>
+      <span class="eyebrow"><span class="dot"></span> <span class="jp" id="greet">最新</span> · Updated June 26, 2026</span>
       <h1 class="logo">SilverBass</h1>
+      <p class="jp-brand">シルバーバス<span class="stamp">音楽</span></p>
       <p class="tagline">Weekly music, hand-picked. Press play.</p>
       <div class="stats">
-        <div class="stat"><b>19</b><span>Tracks</span></div>
-        <div class="stat"><b>4</b><span>Playlists</span></div>
-        <div class="stat"><b>∞</b><span>Replays</span></div>
+        <div class="stat"><b class="num" data-target="46">0</b><span>Tracks</span></div>
+        <div class="stat"><b class="num" data-target="7">0</b><span>Playlists</span></div>
+        <div class="stat"><b id="replayStat">∞</b><span>Replays</span></div>
       </div>
     </header>
 
@@ -386,6 +645,12 @@
         
         <button class="chip" data-filter="on-repeat">🔥 On Repeat</button>
         
+        <button class="chip" data-filter="darkwave">🖤 Darkwave</button>
+        
+        <button class="chip" data-filter="dreampop-lo-fi">🌊 Dreampop & Lo-Fi</button>
+        
+        <button class="chip" data-filter="wildcards">🃏 Wildcards</button>
+        
       </div>
       <button class="ghost-btn" id="surprise" title="Play a random track">
         🎲 Surprise me
@@ -394,13 +659,32 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="m15 15 6 6"/><path d="M4 4l5 5"/></svg>
         Shuffle
       </button>
+      <button class="ghost-btn" id="sleepBtn" title="Sleep timer — auto-pause">🌙 Sleep</button>
+      <button class="ghost-btn" id="installBtn" title="Install SilverBass">⬇️ Install</button>
+    </div>
+
+    <!-- track of the day -->
+    <div class="totd" id="totd" style="display:none;">
+      <div class="totd-art"><img id="totdImg" alt="" /></div>
+      <div class="totd-body">
+        <div class="totd-kicker"><span class="pip"></span> 今日の一曲 · Track of the Day</div>
+        <div class="totd-title" id="totdTitle"></div>
+        <div class="totd-artist" id="totdArtist"></div>
+        <button class="totd-play" id="totdPlay">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          Play today's pick
+        </button>
+      </div>
     </div>
 
     
+    
     <section class="set" id="chill-vibes" data-slug="chill-vibes">
+      <div class="wave-sep" style="--c: #7c5cff"></div>
       <div class="set-head" style="--card-accent: #7c5cff">
         <span class="emoji">🌙</span>
         <h2>Chill Vibes</h2>
+        <span class="jp-tag">夜風</span>
         <span class="genre">Indie / Dream</span>
         <span class="count">3 tracks</span>
       </div>
@@ -411,6 +695,9 @@
                  style="--card-accent: #7c5cff">
           <div class="thumb">
             <img src="https://i.ytimg.com/vi/-3QHpUVjuK4/hqdefault.jpg" alt="Melodies Of Love cover" loading="lazy" />
+            <span class="pcount" data-id="-3QHpUVjuK4">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
             <button class="like" data-id="-3QHpUVjuK4" title="Save to Liked" aria-label="Like">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </button>
@@ -430,6 +717,9 @@
                  style="--card-accent: #7c5cff">
           <div class="thumb">
             <img src="https://i.ytimg.com/vi/3r-qDvD3F3c/hqdefault.jpg" alt="There Is a Light That Never Goes Out cover" loading="lazy" />
+            <span class="pcount" data-id="3r-qDvD3F3c">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
             <button class="like" data-id="3r-qDvD3F3c" title="Save to Liked" aria-label="Like">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </button>
@@ -449,6 +739,9 @@
                  style="--card-accent: #7c5cff">
           <div class="thumb">
             <img src="https://i.ytimg.com/vi/RBtlPT23PTM/hqdefault.jpg" alt="Space Song cover" loading="lazy" />
+            <span class="pcount" data-id="RBtlPT23PTM">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
             <button class="like" data-id="RBtlPT23PTM" title="Save to Liked" aria-label="Like">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </button>
@@ -467,9 +760,11 @@
     </section>
     
     <section class="set" id="night-drive" data-slug="night-drive">
+      <div class="wave-sep" style="--c: #ff5c8a"></div>
       <div class="set-head" style="--card-accent: #ff5c8a">
         <span class="emoji">🌃</span>
         <h2>Night Drive</h2>
+        <span class="jp-tag">夜のドライブ</span>
         <span class="genre">Synth / Dark Pop</span>
         <span class="count">6 tracks</span>
       </div>
@@ -480,6 +775,9 @@
                  style="--card-accent: #ff5c8a">
           <div class="thumb">
             <img src="https://i.ytimg.com/vi/x-OzspEcQG8/hqdefault.jpg" alt="Dark Red cover" loading="lazy" />
+            <span class="pcount" data-id="x-OzspEcQG8">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
             <button class="like" data-id="x-OzspEcQG8" title="Save to Liked" aria-label="Like">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </button>
@@ -499,6 +797,9 @@
                  style="--card-accent: #ff5c8a">
           <div class="thumb">
             <img src="https://i.ytimg.com/vi/azrZoMh_iMQ/hqdefault.jpg" alt="Embrace cover" loading="lazy" />
+            <span class="pcount" data-id="azrZoMh_iMQ">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
             <button class="like" data-id="azrZoMh_iMQ" title="Save to Liked" aria-label="Like">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </button>
@@ -518,6 +819,9 @@
                  style="--card-accent: #ff5c8a">
           <div class="thumb">
             <img src="https://i.ytimg.com/vi/sVx1mJDeUjY/hqdefault.jpg" alt="After Dark cover" loading="lazy" />
+            <span class="pcount" data-id="sVx1mJDeUjY">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
             <button class="like" data-id="sVx1mJDeUjY" title="Save to Liked" aria-label="Like">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </button>
@@ -537,6 +841,9 @@
                  style="--card-accent: #ff5c8a">
           <div class="thumb">
             <img src="https://i.ytimg.com/vi/ETEg-SB01QY/hqdefault.jpg" alt="Little Dark Age cover" loading="lazy" />
+            <span class="pcount" data-id="ETEg-SB01QY">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
             <button class="like" data-id="ETEg-SB01QY" title="Save to Liked" aria-label="Like">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </button>
@@ -556,6 +863,9 @@
                  style="--card-accent: #ff5c8a">
           <div class="thumb">
             <img src="https://i.ytimg.com/vi/PuBupxMdchM/hqdefault.jpg" alt="Dirty Little Secret cover" loading="lazy" />
+            <span class="pcount" data-id="PuBupxMdchM">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
             <button class="like" data-id="PuBupxMdchM" title="Save to Liked" aria-label="Like">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </button>
@@ -575,6 +885,9 @@
                  style="--card-accent: #ff5c8a">
           <div class="thumb">
             <img src="https://i.ytimg.com/vi/6da5__GEito/hqdefault.jpg" alt="Thinking About You cover" loading="lazy" />
+            <span class="pcount" data-id="6da5__GEito">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
             <button class="like" data-id="6da5__GEito" title="Save to Liked" aria-label="Like">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </button>
@@ -593,9 +906,11 @@
     </section>
     
     <section class="set" id="feel-good" data-slug="feel-good">
+      <div class="wave-sep" style="--c: #22c98b"></div>
       <div class="set-head" style="--card-accent: #22c98b">
         <span class="emoji">☀️</span>
         <h2>Feel Good</h2>
+        <span class="jp-tag">気分上々</span>
         <span class="genre">Funk / Pop</span>
         <span class="count">2 tracks</span>
       </div>
@@ -606,6 +921,9 @@
                  style="--card-accent: #22c98b">
           <div class="thumb">
             <img src="https://i.ytimg.com/vi/MmZexg8sxyk/hqdefault.jpg" alt="Electric Feel cover" loading="lazy" />
+            <span class="pcount" data-id="MmZexg8sxyk">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
             <button class="like" data-id="MmZexg8sxyk" title="Save to Liked" aria-label="Like">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </button>
@@ -625,6 +943,9 @@
                  style="--card-accent: #22c98b">
           <div class="thumb">
             <img src="https://i.ytimg.com/vi/bEeaS6fuUoA/hqdefault.jpg" alt="Lovely Day cover" loading="lazy" />
+            <span class="pcount" data-id="bEeaS6fuUoA">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
             <button class="like" data-id="bEeaS6fuUoA" title="Save to Liked" aria-label="Like">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </button>
@@ -643,9 +964,11 @@
     </section>
     
     <section class="set" id="on-repeat" data-slug="on-repeat">
+      <div class="wave-sep" style="--c: #3bc9ff"></div>
       <div class="set-head" style="--card-accent: #3bc9ff">
         <span class="emoji">🔥</span>
         <h2>On Repeat</h2>
+        <span class="jp-tag">リピート中</span>
         <span class="genre">Darkwave / Lo-Fi</span>
         <span class="count">8 tracks</span>
       </div>
@@ -656,6 +979,9 @@
                  style="--card-accent: #3bc9ff">
           <div class="thumb">
             <img src="https://i.ytimg.com/vi/IE8Z-srSYWY/hqdefault.jpg" alt="Rise and Fall cover" loading="lazy" />
+            <span class="pcount" data-id="IE8Z-srSYWY">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
             <button class="like" data-id="IE8Z-srSYWY" title="Save to Liked" aria-label="Like">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </button>
@@ -675,6 +1001,9 @@
                  style="--card-accent: #3bc9ff">
           <div class="thumb">
             <img src="https://i.ytimg.com/vi/UHa8Wire1bA/hqdefault.jpg" alt="Somewhen cover" loading="lazy" />
+            <span class="pcount" data-id="UHa8Wire1bA">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
             <button class="like" data-id="UHa8Wire1bA" title="Save to Liked" aria-label="Like">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </button>
@@ -694,6 +1023,9 @@
                  style="--card-accent: #3bc9ff">
           <div class="thumb">
             <img src="https://i.ytimg.com/vi/NWE4ddnlNKA/hqdefault.jpg" alt="Kids cover" loading="lazy" />
+            <span class="pcount" data-id="NWE4ddnlNKA">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
             <button class="like" data-id="NWE4ddnlNKA" title="Save to Liked" aria-label="Like">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </button>
@@ -713,6 +1045,9 @@
                  style="--card-accent: #3bc9ff">
           <div class="thumb">
             <img src="https://i.ytimg.com/vi/5XtjPMdPN1o/hqdefault.jpg" alt="New Flesh cover" loading="lazy" />
+            <span class="pcount" data-id="5XtjPMdPN1o">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
             <button class="like" data-id="5XtjPMdPN1o" title="Save to Liked" aria-label="Like">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </button>
@@ -732,6 +1067,9 @@
                  style="--card-accent: #3bc9ff">
           <div class="thumb">
             <img src="https://i.ytimg.com/vi/2Pe6TXoRpuE/hqdefault.jpg" alt="Televisions cover" loading="lazy" />
+            <span class="pcount" data-id="2Pe6TXoRpuE">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
             <button class="like" data-id="2Pe6TXoRpuE" title="Save to Liked" aria-label="Like">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </button>
@@ -751,6 +1089,9 @@
                  style="--card-accent: #3bc9ff">
           <div class="thumb">
             <img src="https://i.ytimg.com/vi/MieeouBxkJk/hqdefault.jpg" alt="Dissolver cover" loading="lazy" />
+            <span class="pcount" data-id="MieeouBxkJk">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
             <button class="like" data-id="MieeouBxkJk" title="Save to Liked" aria-label="Like">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </button>
@@ -770,6 +1111,9 @@
                  style="--card-accent: #3bc9ff">
           <div class="thumb">
             <img src="https://i.ytimg.com/vi/yYDmaexVHic/hqdefault.jpg" alt="Rhinestone Eyes cover" loading="lazy" />
+            <span class="pcount" data-id="yYDmaexVHic">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
             <button class="like" data-id="yYDmaexVHic" title="Save to Liked" aria-label="Like">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </button>
@@ -789,6 +1133,9 @@
                  style="--card-accent: #3bc9ff">
           <div class="thumb">
             <img src="https://i.ytimg.com/vi/aL4u2_BRjAs/hqdefault.jpg" alt="Session Cypher cover" loading="lazy" />
+            <span class="pcount" data-id="aL4u2_BRjAs">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
             <button class="like" data-id="aL4u2_BRjAs" title="Save to Liked" aria-label="Like">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </button>
@@ -799,6 +1146,642 @@
           <div class="card-meta">
             <div class="t">Session Cypher</div>
             <div class="a">Xavier Wulf</div>
+            <div class="eq"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </article>
+        
+      </div>
+    </section>
+    
+    <section class="set" id="darkwave" data-slug="darkwave">
+      <div class="wave-sep" style="--c: #b15cff"></div>
+      <div class="set-head" style="--card-accent: #b15cff">
+        <span class="emoji">🖤</span>
+        <h2>Darkwave</h2>
+        <span class="jp-tag">闇波</span>
+        <span class="genre">Darkwave / Coldwave</span>
+        <span class="count">10 tracks</span>
+      </div>
+      <div class="grid">
+        
+        <article class="card" data-id="qn2L9M7kfHE" data-title="Clouds" data-artist="Pastel Ghost"
+                 data-cover="https://i.ytimg.com/vi/qn2L9M7kfHE/hqdefault.jpg" data-url="https://www.youtube.com/watch?v=qn2L9M7kfHE"
+                 style="--card-accent: #b15cff">
+          <div class="thumb">
+            <img src="https://i.ytimg.com/vi/qn2L9M7kfHE/hqdefault.jpg" alt="Clouds cover" loading="lazy" />
+            <span class="pcount" data-id="qn2L9M7kfHE">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
+            <button class="like" data-id="qn2L9M7kfHE" title="Save to Liked" aria-label="Like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <div class="play-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="card-meta">
+            <div class="t">Clouds</div>
+            <div class="a">Pastel Ghost</div>
+            <div class="eq"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </article>
+        
+        <article class="card" data-id="7myzkkyz5cE" data-title="Dance With Me" data-artist="French Police"
+                 data-cover="https://i.ytimg.com/vi/7myzkkyz5cE/hqdefault.jpg" data-url="https://www.youtube.com/watch?v=7myzkkyz5cE"
+                 style="--card-accent: #b15cff">
+          <div class="thumb">
+            <img src="https://i.ytimg.com/vi/7myzkkyz5cE/hqdefault.jpg" alt="Dance With Me cover" loading="lazy" />
+            <span class="pcount" data-id="7myzkkyz5cE">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
+            <button class="like" data-id="7myzkkyz5cE" title="Save to Liked" aria-label="Like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <div class="play-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="card-meta">
+            <div class="t">Dance With Me</div>
+            <div class="a">French Police</div>
+            <div class="eq"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </article>
+        
+        <article class="card" data-id="wO-x7o2PFp4" data-title="Angel Of Death" data-artist="Midi Memory"
+                 data-cover="https://i.ytimg.com/vi/wO-x7o2PFp4/hqdefault.jpg" data-url="https://www.youtube.com/watch?v=wO-x7o2PFp4"
+                 style="--card-accent: #b15cff">
+          <div class="thumb">
+            <img src="https://i.ytimg.com/vi/wO-x7o2PFp4/hqdefault.jpg" alt="Angel Of Death cover" loading="lazy" />
+            <span class="pcount" data-id="wO-x7o2PFp4">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
+            <button class="like" data-id="wO-x7o2PFp4" title="Save to Liked" aria-label="Like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <div class="play-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="card-meta">
+            <div class="t">Angel Of Death</div>
+            <div class="a">Midi Memory</div>
+            <div class="eq"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </article>
+        
+        <article class="card" data-id="aWG4pwYoinE" data-title="Anywhere, Anytime" data-artist="Midi Memory"
+                 data-cover="https://i.ytimg.com/vi/aWG4pwYoinE/hqdefault.jpg" data-url="https://www.youtube.com/watch?v=aWG4pwYoinE"
+                 style="--card-accent: #b15cff">
+          <div class="thumb">
+            <img src="https://i.ytimg.com/vi/aWG4pwYoinE/hqdefault.jpg" alt="Anywhere, Anytime cover" loading="lazy" />
+            <span class="pcount" data-id="aWG4pwYoinE">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
+            <button class="like" data-id="aWG4pwYoinE" title="Save to Liked" aria-label="Like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <div class="play-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="card-meta">
+            <div class="t">Anywhere, Anytime</div>
+            <div class="a">Midi Memory</div>
+            <div class="eq"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </article>
+        
+        <article class="card" data-id="nl1J2uMnoNY" data-title="The Others" data-artist="Rendez Vous"
+                 data-cover="https://i.ytimg.com/vi/nl1J2uMnoNY/hqdefault.jpg" data-url="https://www.youtube.com/watch?v=nl1J2uMnoNY"
+                 style="--card-accent: #b15cff">
+          <div class="thumb">
+            <img src="https://i.ytimg.com/vi/nl1J2uMnoNY/hqdefault.jpg" alt="The Others cover" loading="lazy" />
+            <span class="pcount" data-id="nl1J2uMnoNY">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
+            <button class="like" data-id="nl1J2uMnoNY" title="Save to Liked" aria-label="Like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <div class="play-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="card-meta">
+            <div class="t">The Others</div>
+            <div class="a">Rendez Vous</div>
+            <div class="eq"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </article>
+        
+        <article class="card" data-id="u9FVz7RSbcM" data-title="Itches" data-artist="Coward Syndrome"
+                 data-cover="https://i.ytimg.com/vi/u9FVz7RSbcM/hqdefault.jpg" data-url="https://www.youtube.com/watch?v=u9FVz7RSbcM"
+                 style="--card-accent: #b15cff">
+          <div class="thumb">
+            <img src="https://i.ytimg.com/vi/u9FVz7RSbcM/hqdefault.jpg" alt="Itches cover" loading="lazy" />
+            <span class="pcount" data-id="u9FVz7RSbcM">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
+            <button class="like" data-id="u9FVz7RSbcM" title="Save to Liked" aria-label="Like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <div class="play-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="card-meta">
+            <div class="t">Itches</div>
+            <div class="a">Coward Syndrome</div>
+            <div class="eq"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </article>
+        
+        <article class="card" data-id="rAhXAx02zXM" data-title="Extra Utero" data-artist="Coward Syndrome"
+                 data-cover="https://i.ytimg.com/vi/rAhXAx02zXM/hqdefault.jpg" data-url="https://www.youtube.com/watch?v=rAhXAx02zXM"
+                 style="--card-accent: #b15cff">
+          <div class="thumb">
+            <img src="https://i.ytimg.com/vi/rAhXAx02zXM/hqdefault.jpg" alt="Extra Utero cover" loading="lazy" />
+            <span class="pcount" data-id="rAhXAx02zXM">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
+            <button class="like" data-id="rAhXAx02zXM" title="Save to Liked" aria-label="Like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <div class="play-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="card-meta">
+            <div class="t">Extra Utero</div>
+            <div class="a">Coward Syndrome</div>
+            <div class="eq"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </article>
+        
+        <article class="card" data-id="WRgR7W3NGdw" data-title="heart attack" data-artist="We Cults"
+                 data-cover="https://i.ytimg.com/vi/WRgR7W3NGdw/hqdefault.jpg" data-url="https://www.youtube.com/watch?v=WRgR7W3NGdw"
+                 style="--card-accent: #b15cff">
+          <div class="thumb">
+            <img src="https://i.ytimg.com/vi/WRgR7W3NGdw/hqdefault.jpg" alt="heart attack cover" loading="lazy" />
+            <span class="pcount" data-id="WRgR7W3NGdw">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
+            <button class="like" data-id="WRgR7W3NGdw" title="Save to Liked" aria-label="Like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <div class="play-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="card-meta">
+            <div class="t">heart attack</div>
+            <div class="a">We Cults</div>
+            <div class="eq"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </article>
+        
+        <article class="card" data-id="DYANiHSsYJk" data-title="Verónica Pass" data-artist="R. Missing"
+                 data-cover="https://i.ytimg.com/vi/DYANiHSsYJk/hqdefault.jpg" data-url="https://www.youtube.com/watch?v=DYANiHSsYJk"
+                 style="--card-accent: #b15cff">
+          <div class="thumb">
+            <img src="https://i.ytimg.com/vi/DYANiHSsYJk/hqdefault.jpg" alt="Verónica Pass cover" loading="lazy" />
+            <span class="pcount" data-id="DYANiHSsYJk">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
+            <button class="like" data-id="DYANiHSsYJk" title="Save to Liked" aria-label="Like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <div class="play-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="card-meta">
+            <div class="t">Verónica Pass</div>
+            <div class="a">R. Missing</div>
+            <div class="eq"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </article>
+        
+        <article class="card" data-id="LFUIE0uNCwM" data-title="heroine" data-artist="k0d4m4"
+                 data-cover="https://i.ytimg.com/vi/LFUIE0uNCwM/hqdefault.jpg" data-url="https://www.youtube.com/watch?v=LFUIE0uNCwM"
+                 style="--card-accent: #b15cff">
+          <div class="thumb">
+            <img src="https://i.ytimg.com/vi/LFUIE0uNCwM/hqdefault.jpg" alt="heroine cover" loading="lazy" />
+            <span class="pcount" data-id="LFUIE0uNCwM">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
+            <button class="like" data-id="LFUIE0uNCwM" title="Save to Liked" aria-label="Like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <div class="play-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="card-meta">
+            <div class="t">heroine</div>
+            <div class="a">k0d4m4</div>
+            <div class="eq"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </article>
+        
+      </div>
+    </section>
+    
+    <section class="set" id="dreampop-lo-fi" data-slug="dreampop-lo-fi">
+      <div class="wave-sep" style="--c: #4dd0e1"></div>
+      <div class="set-head" style="--card-accent: #4dd0e1">
+        <span class="emoji">🌊</span>
+        <h2>Dreampop & Lo-Fi</h2>
+        <span class="jp-tag">夢</span>
+        <span class="genre">Dream Pop / Chillwave</span>
+        <span class="count">10 tracks</span>
+      </div>
+      <div class="grid">
+        
+        <article class="card" data-id="uSrkiHgqkl8" data-title="Third Wave" data-artist="Work Drugs"
+                 data-cover="https://i.ytimg.com/vi/uSrkiHgqkl8/hqdefault.jpg" data-url="https://www.youtube.com/watch?v=uSrkiHgqkl8"
+                 style="--card-accent: #4dd0e1">
+          <div class="thumb">
+            <img src="https://i.ytimg.com/vi/uSrkiHgqkl8/hqdefault.jpg" alt="Third Wave cover" loading="lazy" />
+            <span class="pcount" data-id="uSrkiHgqkl8">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
+            <button class="like" data-id="uSrkiHgqkl8" title="Save to Liked" aria-label="Like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <div class="play-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="card-meta">
+            <div class="t">Third Wave</div>
+            <div class="a">Work Drugs</div>
+            <div class="eq"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </article>
+        
+        <article class="card" data-id="q_96o7oNuc8" data-title="Night Drive" data-artist="Part Time"
+                 data-cover="https://i.ytimg.com/vi/q_96o7oNuc8/hqdefault.jpg" data-url="https://www.youtube.com/watch?v=q_96o7oNuc8"
+                 style="--card-accent: #4dd0e1">
+          <div class="thumb">
+            <img src="https://i.ytimg.com/vi/q_96o7oNuc8/hqdefault.jpg" alt="Night Drive cover" loading="lazy" />
+            <span class="pcount" data-id="q_96o7oNuc8">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
+            <button class="like" data-id="q_96o7oNuc8" title="Save to Liked" aria-label="Like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <div class="play-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="card-meta">
+            <div class="t">Night Drive</div>
+            <div class="a">Part Time</div>
+            <div class="eq"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </article>
+        
+        <article class="card" data-id="Rr7-3d3f1DA" data-title="VHS & CHILL" data-artist="The Masqs"
+                 data-cover="https://i.ytimg.com/vi/Rr7-3d3f1DA/hqdefault.jpg" data-url="https://www.youtube.com/watch?v=Rr7-3d3f1DA"
+                 style="--card-accent: #4dd0e1">
+          <div class="thumb">
+            <img src="https://i.ytimg.com/vi/Rr7-3d3f1DA/hqdefault.jpg" alt="VHS & CHILL cover" loading="lazy" />
+            <span class="pcount" data-id="Rr7-3d3f1DA">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
+            <button class="like" data-id="Rr7-3d3f1DA" title="Save to Liked" aria-label="Like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <div class="play-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="card-meta">
+            <div class="t">VHS & CHILL</div>
+            <div class="a">The Masqs</div>
+            <div class="eq"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </article>
+        
+        <article class="card" data-id="dMSuBExsbF8" data-title="Horsegait" data-artist="ultrasaturated"
+                 data-cover="https://i.ytimg.com/vi/dMSuBExsbF8/hqdefault.jpg" data-url="https://www.youtube.com/watch?v=dMSuBExsbF8"
+                 style="--card-accent: #4dd0e1">
+          <div class="thumb">
+            <img src="https://i.ytimg.com/vi/dMSuBExsbF8/hqdefault.jpg" alt="Horsegait cover" loading="lazy" />
+            <span class="pcount" data-id="dMSuBExsbF8">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
+            <button class="like" data-id="dMSuBExsbF8" title="Save to Liked" aria-label="Like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <div class="play-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="card-meta">
+            <div class="t">Horsegait</div>
+            <div class="a">ultrasaturated</div>
+            <div class="eq"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </article>
+        
+        <article class="card" data-id="CtBgx5RbGVc" data-title="numb myself~" data-artist="Corbon Amodio"
+                 data-cover="https://i.ytimg.com/vi/CtBgx5RbGVc/hqdefault.jpg" data-url="https://www.youtube.com/watch?v=CtBgx5RbGVc"
+                 style="--card-accent: #4dd0e1">
+          <div class="thumb">
+            <img src="https://i.ytimg.com/vi/CtBgx5RbGVc/hqdefault.jpg" alt="numb myself~ cover" loading="lazy" />
+            <span class="pcount" data-id="CtBgx5RbGVc">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
+            <button class="like" data-id="CtBgx5RbGVc" title="Save to Liked" aria-label="Like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <div class="play-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="card-meta">
+            <div class="t">numb myself~</div>
+            <div class="a">Corbon Amodio</div>
+            <div class="eq"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </article>
+        
+        <article class="card" data-id="vk4fjaddVJI" data-title="Do You Know What Your Heart Is For?" data-artist="Indo Silver"
+                 data-cover="https://i.ytimg.com/vi/vk4fjaddVJI/hqdefault.jpg" data-url="https://www.youtube.com/watch?v=vk4fjaddVJI"
+                 style="--card-accent: #4dd0e1">
+          <div class="thumb">
+            <img src="https://i.ytimg.com/vi/vk4fjaddVJI/hqdefault.jpg" alt="Do You Know What Your Heart Is For? cover" loading="lazy" />
+            <span class="pcount" data-id="vk4fjaddVJI">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
+            <button class="like" data-id="vk4fjaddVJI" title="Save to Liked" aria-label="Like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <div class="play-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="card-meta">
+            <div class="t">Do You Know What Your Heart Is For?</div>
+            <div class="a">Indo Silver</div>
+            <div class="eq"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </article>
+        
+        <article class="card" data-id="Xt8JLoymxlw" data-title="Hate to Love U" data-artist="Future Nobodies"
+                 data-cover="https://i.ytimg.com/vi/Xt8JLoymxlw/hqdefault.jpg" data-url="https://www.youtube.com/watch?v=Xt8JLoymxlw"
+                 style="--card-accent: #4dd0e1">
+          <div class="thumb">
+            <img src="https://i.ytimg.com/vi/Xt8JLoymxlw/hqdefault.jpg" alt="Hate to Love U cover" loading="lazy" />
+            <span class="pcount" data-id="Xt8JLoymxlw">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
+            <button class="like" data-id="Xt8JLoymxlw" title="Save to Liked" aria-label="Like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <div class="play-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="card-meta">
+            <div class="t">Hate to Love U</div>
+            <div class="a">Future Nobodies</div>
+            <div class="eq"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </article>
+        
+        <article class="card" data-id="GfqEeGnnkZQ" data-title="People Will Always Love You" data-artist="Gap Girls"
+                 data-cover="https://i.ytimg.com/vi/GfqEeGnnkZQ/hqdefault.jpg" data-url="https://www.youtube.com/watch?v=GfqEeGnnkZQ"
+                 style="--card-accent: #4dd0e1">
+          <div class="thumb">
+            <img src="https://i.ytimg.com/vi/GfqEeGnnkZQ/hqdefault.jpg" alt="People Will Always Love You cover" loading="lazy" />
+            <span class="pcount" data-id="GfqEeGnnkZQ">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
+            <button class="like" data-id="GfqEeGnnkZQ" title="Save to Liked" aria-label="Like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <div class="play-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="card-meta">
+            <div class="t">People Will Always Love You</div>
+            <div class="a">Gap Girls</div>
+            <div class="eq"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </article>
+        
+        <article class="card" data-id="x49LejfIFLY" data-title="Alone Tonight" data-artist="Gap Girls"
+                 data-cover="https://i.ytimg.com/vi/x49LejfIFLY/hqdefault.jpg" data-url="https://www.youtube.com/watch?v=x49LejfIFLY"
+                 style="--card-accent: #4dd0e1">
+          <div class="thumb">
+            <img src="https://i.ytimg.com/vi/x49LejfIFLY/hqdefault.jpg" alt="Alone Tonight cover" loading="lazy" />
+            <span class="pcount" data-id="x49LejfIFLY">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
+            <button class="like" data-id="x49LejfIFLY" title="Save to Liked" aria-label="Like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <div class="play-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="card-meta">
+            <div class="t">Alone Tonight</div>
+            <div class="a">Gap Girls</div>
+            <div class="eq"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </article>
+        
+        <article class="card" data-id="rl2gh1rtkoo" data-title="HUSH" data-artist="DJ DEADHORSES"
+                 data-cover="https://i.ytimg.com/vi/rl2gh1rtkoo/hqdefault.jpg" data-url="https://www.youtube.com/watch?v=rl2gh1rtkoo"
+                 style="--card-accent: #4dd0e1">
+          <div class="thumb">
+            <img src="https://i.ytimg.com/vi/rl2gh1rtkoo/hqdefault.jpg" alt="HUSH cover" loading="lazy" />
+            <span class="pcount" data-id="rl2gh1rtkoo">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
+            <button class="like" data-id="rl2gh1rtkoo" title="Save to Liked" aria-label="Like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <div class="play-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="card-meta">
+            <div class="t">HUSH</div>
+            <div class="a">DJ DEADHORSES</div>
+            <div class="eq"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </article>
+        
+      </div>
+    </section>
+    
+    <section class="set" id="wildcards" data-slug="wildcards">
+      <div class="wave-sep" style="--c: #ffb74d"></div>
+      <div class="set-head" style="--card-accent: #ffb74d">
+        <span class="emoji">🃏</span>
+        <h2>Wildcards</h2>
+        <span class="jp-tag">ワイルド</span>
+        <span class="genre">Genre-hoppers</span>
+        <span class="count">7 tracks</span>
+      </div>
+      <div class="grid">
+        
+        <article class="card" data-id="V2G8ESoDXm8" data-title="Saturn" data-artist="SZA"
+                 data-cover="https://i.ytimg.com/vi/V2G8ESoDXm8/hqdefault.jpg" data-url="https://www.youtube.com/watch?v=V2G8ESoDXm8"
+                 style="--card-accent: #ffb74d">
+          <div class="thumb">
+            <img src="https://i.ytimg.com/vi/V2G8ESoDXm8/hqdefault.jpg" alt="Saturn cover" loading="lazy" />
+            <span class="pcount" data-id="V2G8ESoDXm8">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
+            <button class="like" data-id="V2G8ESoDXm8" title="Save to Liked" aria-label="Like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <div class="play-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="card-meta">
+            <div class="t">Saturn</div>
+            <div class="a">SZA</div>
+            <div class="eq"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </article>
+        
+        <article class="card" data-id="1RnPB76mjxI" data-title="OMG" data-artist="Usher ft. will.i.am"
+                 data-cover="https://i.ytimg.com/vi/1RnPB76mjxI/hqdefault.jpg" data-url="https://www.youtube.com/watch?v=1RnPB76mjxI"
+                 style="--card-accent: #ffb74d">
+          <div class="thumb">
+            <img src="https://i.ytimg.com/vi/1RnPB76mjxI/hqdefault.jpg" alt="OMG cover" loading="lazy" />
+            <span class="pcount" data-id="1RnPB76mjxI">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
+            <button class="like" data-id="1RnPB76mjxI" title="Save to Liked" aria-label="Like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <div class="play-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="card-meta">
+            <div class="t">OMG</div>
+            <div class="a">Usher ft. will.i.am</div>
+            <div class="eq"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </article>
+        
+        <article class="card" data-id="FxDMMeWK1ZE" data-title="Turn The Lights Off" data-artist="Kato ft. Jon"
+                 data-cover="https://i.ytimg.com/vi/FxDMMeWK1ZE/hqdefault.jpg" data-url="https://www.youtube.com/watch?v=FxDMMeWK1ZE"
+                 style="--card-accent: #ffb74d">
+          <div class="thumb">
+            <img src="https://i.ytimg.com/vi/FxDMMeWK1ZE/hqdefault.jpg" alt="Turn The Lights Off cover" loading="lazy" />
+            <span class="pcount" data-id="FxDMMeWK1ZE">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
+            <button class="like" data-id="FxDMMeWK1ZE" title="Save to Liked" aria-label="Like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <div class="play-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="card-meta">
+            <div class="t">Turn The Lights Off</div>
+            <div class="a">Kato ft. Jon</div>
+            <div class="eq"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </article>
+        
+        <article class="card" data-id="R26kefYLLLQ" data-title="FRUSTRATION" data-artist="Hush Forte"
+                 data-cover="https://i.ytimg.com/vi/R26kefYLLLQ/hqdefault.jpg" data-url="https://www.youtube.com/watch?v=R26kefYLLLQ"
+                 style="--card-accent: #ffb74d">
+          <div class="thumb">
+            <img src="https://i.ytimg.com/vi/R26kefYLLLQ/hqdefault.jpg" alt="FRUSTRATION cover" loading="lazy" />
+            <span class="pcount" data-id="R26kefYLLLQ">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
+            <button class="like" data-id="R26kefYLLLQ" title="Save to Liked" aria-label="Like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <div class="play-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="card-meta">
+            <div class="t">FRUSTRATION</div>
+            <div class="a">Hush Forte</div>
+            <div class="eq"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </article>
+        
+        <article class="card" data-id="QRTNLDRHOTI" data-title="Miss Me When I'm Gone" data-artist="Chris Travis"
+                 data-cover="https://i.ytimg.com/vi/QRTNLDRHOTI/hqdefault.jpg" data-url="https://www.youtube.com/watch?v=QRTNLDRHOTI"
+                 style="--card-accent: #ffb74d">
+          <div class="thumb">
+            <img src="https://i.ytimg.com/vi/QRTNLDRHOTI/hqdefault.jpg" alt="Miss Me When I'm Gone cover" loading="lazy" />
+            <span class="pcount" data-id="QRTNLDRHOTI">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
+            <button class="like" data-id="QRTNLDRHOTI" title="Save to Liked" aria-label="Like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <div class="play-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="card-meta">
+            <div class="t">Miss Me When I'm Gone</div>
+            <div class="a">Chris Travis</div>
+            <div class="eq"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </article>
+        
+        <article class="card" data-id="tymWpEU8wpM" data-title="This Love" data-artist="Pantera"
+                 data-cover="https://i.ytimg.com/vi/tymWpEU8wpM/hqdefault.jpg" data-url="https://www.youtube.com/watch?v=tymWpEU8wpM"
+                 style="--card-accent: #ffb74d">
+          <div class="thumb">
+            <img src="https://i.ytimg.com/vi/tymWpEU8wpM/hqdefault.jpg" alt="This Love cover" loading="lazy" />
+            <span class="pcount" data-id="tymWpEU8wpM">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
+            <button class="like" data-id="tymWpEU8wpM" title="Save to Liked" aria-label="Like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <div class="play-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="card-meta">
+            <div class="t">This Love</div>
+            <div class="a">Pantera</div>
+            <div class="eq"><i></i><i></i><i></i><i></i></div>
+          </div>
+        </article>
+        
+        <article class="card" data-id="auLBLk4ibAk" data-title="Tom Sawyer" data-artist="Rush"
+                 data-cover="https://i.ytimg.com/vi/auLBLk4ibAk/hqdefault.jpg" data-url="https://www.youtube.com/watch?v=auLBLk4ibAk"
+                 style="--card-accent: #ffb74d">
+          <div class="thumb">
+            <img src="https://i.ytimg.com/vi/auLBLk4ibAk/hqdefault.jpg" alt="Tom Sawyer cover" loading="lazy" />
+            <span class="pcount" data-id="auLBLk4ibAk">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><b></b>
+            </span>
+            <button class="like" data-id="auLBLk4ibAk" title="Save to Liked" aria-label="Like">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <div class="play-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="card-meta">
+            <div class="t">Tom Sawyer</div>
+            <div class="a">Rush</div>
             <div class="eq"><i></i><i></i><i></i><i></i></div>
           </div>
         </article>
@@ -821,6 +1804,7 @@
         
       </div>
       <p>Curated by Ailyn Diaz · Built with Python, YAML &amp; a lot of late nights.</p>
+      <p style="font-family: var(--jp-brush); letter-spacing: 0.3em; color: #ffb3cd; margin-top: 10px;">音楽は心の言語 · music is the language of the heart</p>
     </footer>
   </div>
 
@@ -829,9 +1813,12 @@
     <div class="viz" id="viz"></div>
     <div class="nb-progress" id="progress"><div class="fill" id="fill"></div></div>
     <div class="nb-inner">
-      <div class="nb-art">
+      <div class="nb-art" id="nbArt">
         <img class="nb-cover" id="nbCover" alt="" />
         <div id="yt-player"></div>
+        <button class="art-expand" id="btnExpand" title="Theater mode (t)" aria-label="Expand player">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+        </button>
       </div>
       <div class="nb-info">
         <div class="t" id="nbTitle">Nothing playing</div>
@@ -859,10 +1846,78 @@
         <button class="nb-btn" id="btnShare" title="Share this track (c)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>
         </button>
+        <button class="nb-btn" id="btnMute" title="Mute / unmute (m)">
+          <svg id="muteIcon" width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M3 10v4h4l5 5V5L7 10H3z"/><path d="M16 8.5a4 4 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18.5 6a7 7 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+        <input type="range" id="vol" class="vol" min="0" max="100" value="100" title="Volume" aria-label="Volume" />
       </div>
       <div class="nb-time"><span id="cur">0:00</span> / <span id="dur">0:00</span><a class="open" id="ytLink" target="_blank" rel="noopener">YouTube ↗</a></div>
     </div>
   </div>
+
+  <!-- theater mode -->
+  <div id="theater"></div>
+  <button id="theaterClose" title="Close (esc)" aria-label="Close theater">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+  </button>
+  <div class="theater-modal" id="theaterModal">
+    <div class="tm-screen" id="tmScreen"></div>
+    <div class="tm-body">
+      <div class="tm-info"><div class="t" id="tmTitle">Nothing playing</div><div class="a" id="tmArtist"></div></div>
+      <div class="tm-progress" id="tmProgress"><div class="fill" id="tmFill"></div></div>
+      <div class="tm-times"><span id="tmCur">0:00</span><span id="tmDur">0:00</span></div>
+      <div class="tm-controls">
+        <button class="nb-btn" id="tmLike" title="Like (l)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </button>
+        <button class="nb-btn" id="tmShuffle" title="Shuffle (s)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="m15 15 6 6"/><path d="M4 4l5 5"/></svg>
+        </button>
+        <button class="nb-btn" id="tmPrev" title="Previous (←)">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+        </button>
+        <button class="nb-btn nb-play" id="tmPlay" title="Play / Pause (space)">
+          <svg id="tmPlayIcon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <button class="nb-btn" id="tmNext" title="Next (→)">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg>
+        </button>
+        <button class="nb-btn" id="tmRepeat" title="Repeat (r)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>
+        </button>
+        <button class="nb-btn" id="tmShare" title="Share (c)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>
+        </button>
+      </div>
+      <div class="tm-up">
+        <h4>Up Next</h4>
+        <div class="tm-list" id="tmList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- music-flow intro animation layer (sits over the video) -->
+  <div id="stageLayer">
+    <div id="tmViz" class="show">
+      <div id="vizBg"></div>
+      <div class="glow"></div>
+      <div class="viz-flow" id="vizFlow"></div>
+      <div class="viz-np"><span class="pip"></span> <span class="jp">再生中</span> · Now Playing</div>
+      <button class="viz-watch" id="vizWatch">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        Watch video
+      </button>
+    </div>
+    <button id="vizShow">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 12h2l2-6 4 14 3-9 2 4h3"/></svg>
+      Show animation
+    </button>
+  </div>
+
+  <!-- back to top -->
+  <button class="to-top" id="toTop" title="Back to top" aria-label="Back to top">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+  </button>
 
   <!-- toast -->
   <div class="toast" id="toast"></div>
@@ -878,8 +1933,10 @@
       <div class="help-row"><b>Previous track</b> <kbd>←</kbd></div>
       <div class="help-row"><b>Shuffle</b> <kbd>s</kbd></div>
       <div class="help-row"><b>Repeat</b> <kbd>r</kbd></div>
+      <div class="help-row"><b>Mute / unmute</b> <kbd>m</kbd></div>
       <div class="help-row"><b>Like current track</b> <kbd>l</kbd></div>
       <div class="help-row"><b>Copy share link</b> <kbd>c</kbd></div>
+      <div class="help-row"><b>Theater mode</b> <kbd>t</kbd></div>
       <div class="help-row"><b>Search</b> <kbd>/</kbd></div>
       <div class="help-row"><b>This menu</b> <kbd>?</kbd></div>
       <button class="help-close" id="helpClose">Got it</button>
@@ -887,7 +1944,7 @@
   </div>
 
 <script>
-  const QUEUE = [{"accent": "#7c5cff", "artist": "Pink Rhythm", "cover": "https://i.ytimg.com/vi/-3QHpUVjuK4/hqdefault.jpg", "theme": "Chill Vibes", "title": "Melodies Of Love", "url": "https://www.youtube.com/watch?v=-3QHpUVjuK4", "video_id": "-3QHpUVjuK4"}, {"accent": "#7c5cff", "artist": "The Smiths", "cover": "https://i.ytimg.com/vi/3r-qDvD3F3c/hqdefault.jpg", "theme": "Chill Vibes", "title": "There Is a Light That Never Goes Out", "url": "https://www.youtube.com/watch?v=3r-qDvD3F3c\u0026list=RDEMZRBmdKVSaLwvx0hRMgtXvg\u0026start_radio=1", "video_id": "3r-qDvD3F3c"}, {"accent": "#7c5cff", "artist": "Beach House", "cover": "https://i.ytimg.com/vi/RBtlPT23PTM/hqdefault.jpg", "theme": "Chill Vibes", "title": "Space Song", "url": "https://www.youtube.com/watch?v=RBtlPT23PTM", "video_id": "RBtlPT23PTM"}, {"accent": "#ff5c8a", "artist": "Steve Lacy", "cover": "https://i.ytimg.com/vi/x-OzspEcQG8/hqdefault.jpg", "theme": "Night Drive", "title": "Dark Red", "url": "https://www.youtube.com/watch?v=x-OzspEcQG8", "video_id": "x-OzspEcQG8"}, {"accent": "#ff5c8a", "artist": "Pastel Ghost", "cover": "https://i.ytimg.com/vi/azrZoMh_iMQ/hqdefault.jpg", "theme": "Night Drive", "title": "Embrace", "url": "https://www.youtube.com/watch?v=azrZoMh_iMQ", "video_id": "azrZoMh_iMQ"}, {"accent": "#ff5c8a", "artist": "Mr.Kitty", "cover": "https://i.ytimg.com/vi/sVx1mJDeUjY/hqdefault.jpg", "theme": "Night Drive", "title": "After Dark", "url": "https://www.youtube.com/watch?v=sVx1mJDeUjY", "video_id": "sVx1mJDeUjY"}, {"accent": "#ff5c8a", "artist": "MGMT", "cover": "https://i.ytimg.com/vi/ETEg-SB01QY/hqdefault.jpg", "theme": "Night Drive", "title": "Little Dark Age", "url": "https://www.youtube.com/watch?v=ETEg-SB01QY", "video_id": "ETEg-SB01QY"}, {"accent": "#ff5c8a", "artist": "Artemas", "cover": "https://i.ytimg.com/vi/PuBupxMdchM/hqdefault.jpg", "theme": "Night Drive", "title": "Dirty Little Secret", "url": "https://www.youtube.com/watch?v=PuBupxMdchM", "video_id": "PuBupxMdchM"}, {"accent": "#ff5c8a", "artist": "Calvin Harris ft. Ayah Marar", "cover": "https://i.ytimg.com/vi/6da5__GEito/hqdefault.jpg", "theme": "Night Drive", "title": "Thinking About You", "url": "https://www.youtube.com/watch?v=6da5__GEito", "video_id": "6da5__GEito"}, {"accent": "#22c98b", "artist": "MGMT", "cover": "https://i.ytimg.com/vi/MmZexg8sxyk/hqdefault.jpg", "theme": "Feel Good", "title": "Electric Feel", "url": "https://www.youtube.com/watch?v=MmZexg8sxyk", "video_id": "MmZexg8sxyk"}, {"accent": "#22c98b", "artist": "Bill Withers", "cover": "https://i.ytimg.com/vi/bEeaS6fuUoA/hqdefault.jpg", "theme": "Feel Good", "title": "Lovely Day", "url": "https://www.youtube.com/watch?v=bEeaS6fuUoA", "video_id": "bEeaS6fuUoA"}, {"accent": "#3bc9ff", "artist": "Night Drive", "cover": "https://i.ytimg.com/vi/IE8Z-srSYWY/hqdefault.jpg", "theme": "On Repeat", "title": "Rise and Fall", "url": "https://www.youtube.com/watch?v=IE8Z-srSYWY", "video_id": "IE8Z-srSYWY"}, {"accent": "#3bc9ff", "artist": "Future Nobodies", "cover": "https://i.ytimg.com/vi/UHa8Wire1bA/hqdefault.jpg", "theme": "On Repeat", "title": "Somewhen", "url": "https://www.youtube.com/watch?v=UHa8Wire1bA", "video_id": "UHa8Wire1bA"}, {"accent": "#3bc9ff", "artist": "Current Joys", "cover": "https://i.ytimg.com/vi/NWE4ddnlNKA/hqdefault.jpg", "theme": "On Repeat", "title": "Kids", "url": "https://www.youtube.com/watch?v=NWE4ddnlNKA", "video_id": "NWE4ddnlNKA"}, {"accent": "#3bc9ff", "artist": "Current Joys", "cover": "https://i.ytimg.com/vi/5XtjPMdPN1o/hqdefault.jpg", "theme": "On Repeat", "title": "New Flesh", "url": "https://www.youtube.com/watch?v=5XtjPMdPN1o", "video_id": "5XtjPMdPN1o"}, {"accent": "#3bc9ff", "artist": "Current Joys", "cover": "https://i.ytimg.com/vi/2Pe6TXoRpuE/hqdefault.jpg", "theme": "On Repeat", "title": "Televisions", "url": "https://www.youtube.com/watch?v=2Pe6TXoRpuE", "video_id": "2Pe6TXoRpuE"}, {"accent": "#3bc9ff", "artist": "Midi Memory", "cover": "https://i.ytimg.com/vi/MieeouBxkJk/hqdefault.jpg", "theme": "On Repeat", "title": "Dissolver", "url": "https://www.youtube.com/watch?v=MieeouBxkJk", "video_id": "MieeouBxkJk"}, {"accent": "#3bc9ff", "artist": "Gorillaz", "cover": "https://i.ytimg.com/vi/yYDmaexVHic/hqdefault.jpg", "theme": "On Repeat", "title": "Rhinestone Eyes", "url": "https://www.youtube.com/watch?v=yYDmaexVHic", "video_id": "yYDmaexVHic"}, {"accent": "#3bc9ff", "artist": "Xavier Wulf", "cover": "https://i.ytimg.com/vi/aL4u2_BRjAs/hqdefault.jpg", "theme": "On Repeat", "title": "Session Cypher", "url": "https://www.youtube.com/watch?v=aL4u2_BRjAs", "video_id": "aL4u2_BRjAs"}];
+  const QUEUE = [{"accent": "#7c5cff", "artist": "Pink Rhythm", "cover": "https://i.ytimg.com/vi/-3QHpUVjuK4/hqdefault.jpg", "theme": "Chill Vibes", "title": "Melodies Of Love", "url": "https://www.youtube.com/watch?v=-3QHpUVjuK4", "video_id": "-3QHpUVjuK4"}, {"accent": "#7c5cff", "artist": "The Smiths", "cover": "https://i.ytimg.com/vi/3r-qDvD3F3c/hqdefault.jpg", "theme": "Chill Vibes", "title": "There Is a Light That Never Goes Out", "url": "https://www.youtube.com/watch?v=3r-qDvD3F3c\u0026list=RDEMZRBmdKVSaLwvx0hRMgtXvg\u0026start_radio=1", "video_id": "3r-qDvD3F3c"}, {"accent": "#7c5cff", "artist": "Beach House", "cover": "https://i.ytimg.com/vi/RBtlPT23PTM/hqdefault.jpg", "theme": "Chill Vibes", "title": "Space Song", "url": "https://www.youtube.com/watch?v=RBtlPT23PTM", "video_id": "RBtlPT23PTM"}, {"accent": "#ff5c8a", "artist": "Steve Lacy", "cover": "https://i.ytimg.com/vi/x-OzspEcQG8/hqdefault.jpg", "theme": "Night Drive", "title": "Dark Red", "url": "https://www.youtube.com/watch?v=x-OzspEcQG8", "video_id": "x-OzspEcQG8"}, {"accent": "#ff5c8a", "artist": "Pastel Ghost", "cover": "https://i.ytimg.com/vi/azrZoMh_iMQ/hqdefault.jpg", "theme": "Night Drive", "title": "Embrace", "url": "https://www.youtube.com/watch?v=azrZoMh_iMQ", "video_id": "azrZoMh_iMQ"}, {"accent": "#ff5c8a", "artist": "Mr.Kitty", "cover": "https://i.ytimg.com/vi/sVx1mJDeUjY/hqdefault.jpg", "theme": "Night Drive", "title": "After Dark", "url": "https://www.youtube.com/watch?v=sVx1mJDeUjY", "video_id": "sVx1mJDeUjY"}, {"accent": "#ff5c8a", "artist": "MGMT", "cover": "https://i.ytimg.com/vi/ETEg-SB01QY/hqdefault.jpg", "theme": "Night Drive", "title": "Little Dark Age", "url": "https://www.youtube.com/watch?v=ETEg-SB01QY", "video_id": "ETEg-SB01QY"}, {"accent": "#ff5c8a", "artist": "Artemas", "cover": "https://i.ytimg.com/vi/PuBupxMdchM/hqdefault.jpg", "theme": "Night Drive", "title": "Dirty Little Secret", "url": "https://www.youtube.com/watch?v=PuBupxMdchM", "video_id": "PuBupxMdchM"}, {"accent": "#ff5c8a", "artist": "Calvin Harris ft. Ayah Marar", "cover": "https://i.ytimg.com/vi/6da5__GEito/hqdefault.jpg", "theme": "Night Drive", "title": "Thinking About You", "url": "https://www.youtube.com/watch?v=6da5__GEito", "video_id": "6da5__GEito"}, {"accent": "#22c98b", "artist": "MGMT", "cover": "https://i.ytimg.com/vi/MmZexg8sxyk/hqdefault.jpg", "theme": "Feel Good", "title": "Electric Feel", "url": "https://www.youtube.com/watch?v=MmZexg8sxyk", "video_id": "MmZexg8sxyk"}, {"accent": "#22c98b", "artist": "Bill Withers", "cover": "https://i.ytimg.com/vi/bEeaS6fuUoA/hqdefault.jpg", "theme": "Feel Good", "title": "Lovely Day", "url": "https://www.youtube.com/watch?v=bEeaS6fuUoA", "video_id": "bEeaS6fuUoA"}, {"accent": "#3bc9ff", "artist": "Night Drive", "cover": "https://i.ytimg.com/vi/IE8Z-srSYWY/hqdefault.jpg", "theme": "On Repeat", "title": "Rise and Fall", "url": "https://www.youtube.com/watch?v=IE8Z-srSYWY", "video_id": "IE8Z-srSYWY"}, {"accent": "#3bc9ff", "artist": "Future Nobodies", "cover": "https://i.ytimg.com/vi/UHa8Wire1bA/hqdefault.jpg", "theme": "On Repeat", "title": "Somewhen", "url": "https://www.youtube.com/watch?v=UHa8Wire1bA", "video_id": "UHa8Wire1bA"}, {"accent": "#3bc9ff", "artist": "Current Joys", "cover": "https://i.ytimg.com/vi/NWE4ddnlNKA/hqdefault.jpg", "theme": "On Repeat", "title": "Kids", "url": "https://www.youtube.com/watch?v=NWE4ddnlNKA", "video_id": "NWE4ddnlNKA"}, {"accent": "#3bc9ff", "artist": "Current Joys", "cover": "https://i.ytimg.com/vi/5XtjPMdPN1o/hqdefault.jpg", "theme": "On Repeat", "title": "New Flesh", "url": "https://www.youtube.com/watch?v=5XtjPMdPN1o", "video_id": "5XtjPMdPN1o"}, {"accent": "#3bc9ff", "artist": "Current Joys", "cover": "https://i.ytimg.com/vi/2Pe6TXoRpuE/hqdefault.jpg", "theme": "On Repeat", "title": "Televisions", "url": "https://www.youtube.com/watch?v=2Pe6TXoRpuE", "video_id": "2Pe6TXoRpuE"}, {"accent": "#3bc9ff", "artist": "Midi Memory", "cover": "https://i.ytimg.com/vi/MieeouBxkJk/hqdefault.jpg", "theme": "On Repeat", "title": "Dissolver", "url": "https://www.youtube.com/watch?v=MieeouBxkJk", "video_id": "MieeouBxkJk"}, {"accent": "#3bc9ff", "artist": "Gorillaz", "cover": "https://i.ytimg.com/vi/yYDmaexVHic/hqdefault.jpg", "theme": "On Repeat", "title": "Rhinestone Eyes", "url": "https://www.youtube.com/watch?v=yYDmaexVHic", "video_id": "yYDmaexVHic"}, {"accent": "#3bc9ff", "artist": "Xavier Wulf", "cover": "https://i.ytimg.com/vi/aL4u2_BRjAs/hqdefault.jpg", "theme": "On Repeat", "title": "Session Cypher", "url": "https://www.youtube.com/watch?v=aL4u2_BRjAs", "video_id": "aL4u2_BRjAs"}, {"accent": "#b15cff", "artist": "Pastel Ghost", "cover": "https://i.ytimg.com/vi/qn2L9M7kfHE/hqdefault.jpg", "theme": "Darkwave", "title": "Clouds", "url": "https://www.youtube.com/watch?v=qn2L9M7kfHE", "video_id": "qn2L9M7kfHE"}, {"accent": "#b15cff", "artist": "French Police", "cover": "https://i.ytimg.com/vi/7myzkkyz5cE/hqdefault.jpg", "theme": "Darkwave", "title": "Dance With Me", "url": "https://www.youtube.com/watch?v=7myzkkyz5cE", "video_id": "7myzkkyz5cE"}, {"accent": "#b15cff", "artist": "Midi Memory", "cover": "https://i.ytimg.com/vi/wO-x7o2PFp4/hqdefault.jpg", "theme": "Darkwave", "title": "Angel Of Death", "url": "https://www.youtube.com/watch?v=wO-x7o2PFp4", "video_id": "wO-x7o2PFp4"}, {"accent": "#b15cff", "artist": "Midi Memory", "cover": "https://i.ytimg.com/vi/aWG4pwYoinE/hqdefault.jpg", "theme": "Darkwave", "title": "Anywhere, Anytime", "url": "https://www.youtube.com/watch?v=aWG4pwYoinE", "video_id": "aWG4pwYoinE"}, {"accent": "#b15cff", "artist": "Rendez Vous", "cover": "https://i.ytimg.com/vi/nl1J2uMnoNY/hqdefault.jpg", "theme": "Darkwave", "title": "The Others", "url": "https://www.youtube.com/watch?v=nl1J2uMnoNY", "video_id": "nl1J2uMnoNY"}, {"accent": "#b15cff", "artist": "Coward Syndrome", "cover": "https://i.ytimg.com/vi/u9FVz7RSbcM/hqdefault.jpg", "theme": "Darkwave", "title": "Itches", "url": "https://www.youtube.com/watch?v=u9FVz7RSbcM", "video_id": "u9FVz7RSbcM"}, {"accent": "#b15cff", "artist": "Coward Syndrome", "cover": "https://i.ytimg.com/vi/rAhXAx02zXM/hqdefault.jpg", "theme": "Darkwave", "title": "Extra Utero", "url": "https://www.youtube.com/watch?v=rAhXAx02zXM", "video_id": "rAhXAx02zXM"}, {"accent": "#b15cff", "artist": "We Cults", "cover": "https://i.ytimg.com/vi/WRgR7W3NGdw/hqdefault.jpg", "theme": "Darkwave", "title": "heart attack", "url": "https://www.youtube.com/watch?v=WRgR7W3NGdw", "video_id": "WRgR7W3NGdw"}, {"accent": "#b15cff", "artist": "R. Missing", "cover": "https://i.ytimg.com/vi/DYANiHSsYJk/hqdefault.jpg", "theme": "Darkwave", "title": "Ver\u00f3nica Pass", "url": "https://www.youtube.com/watch?v=DYANiHSsYJk", "video_id": "DYANiHSsYJk"}, {"accent": "#b15cff", "artist": "k0d4m4", "cover": "https://i.ytimg.com/vi/LFUIE0uNCwM/hqdefault.jpg", "theme": "Darkwave", "title": "heroine", "url": "https://www.youtube.com/watch?v=LFUIE0uNCwM", "video_id": "LFUIE0uNCwM"}, {"accent": "#4dd0e1", "artist": "Work Drugs", "cover": "https://i.ytimg.com/vi/uSrkiHgqkl8/hqdefault.jpg", "theme": "Dreampop \u0026 Lo-Fi", "title": "Third Wave", "url": "https://www.youtube.com/watch?v=uSrkiHgqkl8", "video_id": "uSrkiHgqkl8"}, {"accent": "#4dd0e1", "artist": "Part Time", "cover": "https://i.ytimg.com/vi/q_96o7oNuc8/hqdefault.jpg", "theme": "Dreampop \u0026 Lo-Fi", "title": "Night Drive", "url": "https://www.youtube.com/watch?v=q_96o7oNuc8", "video_id": "q_96o7oNuc8"}, {"accent": "#4dd0e1", "artist": "The Masqs", "cover": "https://i.ytimg.com/vi/Rr7-3d3f1DA/hqdefault.jpg", "theme": "Dreampop \u0026 Lo-Fi", "title": "VHS \u0026 CHILL", "url": "https://www.youtube.com/watch?v=Rr7-3d3f1DA", "video_id": "Rr7-3d3f1DA"}, {"accent": "#4dd0e1", "artist": "ultrasaturated", "cover": "https://i.ytimg.com/vi/dMSuBExsbF8/hqdefault.jpg", "theme": "Dreampop \u0026 Lo-Fi", "title": "Horsegait", "url": "https://www.youtube.com/watch?v=dMSuBExsbF8", "video_id": "dMSuBExsbF8"}, {"accent": "#4dd0e1", "artist": "Corbon Amodio", "cover": "https://i.ytimg.com/vi/CtBgx5RbGVc/hqdefault.jpg", "theme": "Dreampop \u0026 Lo-Fi", "title": "numb myself~", "url": "https://www.youtube.com/watch?v=CtBgx5RbGVc", "video_id": "CtBgx5RbGVc"}, {"accent": "#4dd0e1", "artist": "Indo Silver", "cover": "https://i.ytimg.com/vi/vk4fjaddVJI/hqdefault.jpg", "theme": "Dreampop \u0026 Lo-Fi", "title": "Do You Know What Your Heart Is For?", "url": "https://www.youtube.com/watch?v=vk4fjaddVJI", "video_id": "vk4fjaddVJI"}, {"accent": "#4dd0e1", "artist": "Future Nobodies", "cover": "https://i.ytimg.com/vi/Xt8JLoymxlw/hqdefault.jpg", "theme": "Dreampop \u0026 Lo-Fi", "title": "Hate to Love U", "url": "https://www.youtube.com/watch?v=Xt8JLoymxlw", "video_id": "Xt8JLoymxlw"}, {"accent": "#4dd0e1", "artist": "Gap Girls", "cover": "https://i.ytimg.com/vi/GfqEeGnnkZQ/hqdefault.jpg", "theme": "Dreampop \u0026 Lo-Fi", "title": "People Will Always Love You", "url": "https://www.youtube.com/watch?v=GfqEeGnnkZQ", "video_id": "GfqEeGnnkZQ"}, {"accent": "#4dd0e1", "artist": "Gap Girls", "cover": "https://i.ytimg.com/vi/x49LejfIFLY/hqdefault.jpg", "theme": "Dreampop \u0026 Lo-Fi", "title": "Alone Tonight", "url": "https://www.youtube.com/watch?v=x49LejfIFLY", "video_id": "x49LejfIFLY"}, {"accent": "#4dd0e1", "artist": "DJ DEADHORSES", "cover": "https://i.ytimg.com/vi/rl2gh1rtkoo/hqdefault.jpg", "theme": "Dreampop \u0026 Lo-Fi", "title": "HUSH", "url": "https://www.youtube.com/watch?v=rl2gh1rtkoo", "video_id": "rl2gh1rtkoo"}, {"accent": "#ffb74d", "artist": "SZA", "cover": "https://i.ytimg.com/vi/V2G8ESoDXm8/hqdefault.jpg", "theme": "Wildcards", "title": "Saturn", "url": "https://www.youtube.com/watch?v=V2G8ESoDXm8", "video_id": "V2G8ESoDXm8"}, {"accent": "#ffb74d", "artist": "Usher ft. will.i.am", "cover": "https://i.ytimg.com/vi/1RnPB76mjxI/hqdefault.jpg", "theme": "Wildcards", "title": "OMG", "url": "https://www.youtube.com/watch?v=1RnPB76mjxI", "video_id": "1RnPB76mjxI"}, {"accent": "#ffb74d", "artist": "Kato ft. Jon", "cover": "https://i.ytimg.com/vi/FxDMMeWK1ZE/hqdefault.jpg", "theme": "Wildcards", "title": "Turn The Lights Off", "url": "https://www.youtube.com/watch?v=FxDMMeWK1ZE", "video_id": "FxDMMeWK1ZE"}, {"accent": "#ffb74d", "artist": "Hush Forte", "cover": "https://i.ytimg.com/vi/R26kefYLLLQ/hqdefault.jpg", "theme": "Wildcards", "title": "FRUSTRATION", "url": "https://www.youtube.com/watch?v=R26kefYLLLQ", "video_id": "R26kefYLLLQ"}, {"accent": "#ffb74d", "artist": "Chris Travis", "cover": "https://i.ytimg.com/vi/QRTNLDRHOTI/hqdefault.jpg", "theme": "Wildcards", "title": "Miss Me When I\u0027m Gone", "url": "https://www.youtube.com/watch?v=QRTNLDRHOTI", "video_id": "QRTNLDRHOTI"}, {"accent": "#ffb74d", "artist": "Pantera", "cover": "https://i.ytimg.com/vi/tymWpEU8wpM/hqdefault.jpg", "theme": "Wildcards", "title": "This Love", "url": "https://www.youtube.com/watch?v=tymWpEU8wpM", "video_id": "tymWpEU8wpM"}, {"accent": "#ffb74d", "artist": "Rush", "cover": "https://i.ytimg.com/vi/auLBLk4ibAk/hqdefault.jpg", "theme": "Wildcards", "title": "Tom Sawyer", "url": "https://www.youtube.com/watch?v=auLBLk4ibAk", "video_id": "auLBLk4ibAk"}];
   const cards = Array.from(document.querySelectorAll('.card'));
 
   // map each card to its index in the (filterable) play order
@@ -925,9 +1982,11 @@
   }
 
   function setPlayIcon(playing) {
-    $('playIcon').innerHTML = playing
+    const icon = playing
       ? '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>'
       : '<path d="M8 5v14l11-7z"/>';
+    $('playIcon').innerHTML = icon;
+    $('tmPlayIcon').innerHTML = icon;
     $('nowbar').classList.toggle('playing', playing);
   }
 
@@ -936,8 +1995,11 @@
     ticker = setInterval(() => {
       if (!player || !player.getDuration) return;
       const d = player.getDuration(), c = player.getCurrentTime();
-      $('fill').style.width = d ? (c/d*100)+'%' : '0%';
-      $('cur').textContent = fmt(c); $('dur').textContent = fmt(d);
+      const pct = d ? (c/d*100)+'%' : '0%';
+      $('fill').style.width = pct; $('tmFill').style.width = pct;
+      const cs = fmt(c), ds = fmt(d);
+      $('cur').textContent = cs; $('dur').textContent = ds;
+      $('tmCur').textContent = cs; $('tmDur').textContent = ds;
     }, 400);
   }
   function stopTicker() { clearInterval(ticker); }
@@ -957,8 +2019,14 @@
     $('nbArtist').textContent = card.dataset.artist;
     $('nbCover').src = card.dataset.cover || '';
     $('ytLink').href = card.dataset.url;
+    setNowMeta(card);
+    bumpPlay(id);
     updateLikeUI();
     showToast('Now playing', card.dataset.title, card.dataset.artist);
+    $('tmTitle').textContent = card.dataset.title;
+    $('tmArtist').textContent = card.dataset.artist;
+    syncTheaterStates();
+    if (document.body.classList.contains('theater-open')) { renderUpNext(); showViz(); }
     try { localStorage.setItem('sb_last', id); } catch (e) {}
 
     if (!id) { window.open(card.dataset.url, '_blank'); return; }
@@ -1037,7 +2105,7 @@
   /* ---------- keyboard ---------- */
   document.addEventListener('keydown', e => {
     if (e.target.tagName === 'INPUT') { if (e.key === 'Escape') e.target.blur(); return; }
-    if (e.key === 'Escape') { $('help').classList.remove('show'); return; }
+    if (e.key === 'Escape') { $('help').classList.remove('show'); closeTheater(); return; }
     if (e.key === '?' || (e.shiftKey && e.key === '/')) { e.preventDefault(); $('help').classList.toggle('show'); }
     else if (e.key === '/') { e.preventDefault(); search.focus(); }
     else if (e.code === 'Space') { e.preventDefault(); toggle(); }
@@ -1045,8 +2113,10 @@
     else if (e.key === 'ArrowLeft') prev();
     else if (e.key.toLowerCase() === 's') $('btnShuffle').click();
     else if (e.key.toLowerCase() === 'r') $('btnRepeat').click();
+    else if (e.key.toLowerCase() === 'm') toggleMute();
     else if (e.key.toLowerCase() === 'l') $('btnLike').click();
     else if (e.key.toLowerCase() === 'c') shareCurrent();
+    else if (e.key.toLowerCase() === 't') toggleTheater();
   });
 
   /* ---------- toast ---------- */
@@ -1070,7 +2140,7 @@
   function toggleLike(id) {
     if (!id) return;
     likes.has(id) ? likes.delete(id) : likes.add(id);
-    saveLikes(); refreshLikeButtons(); updateLikeUI();
+    saveLikes(); refreshLikeButtons(); updateLikeUI(); syncTheaterStates();
     if (activeFilter === 'liked') applyFilter();
   }
   function refreshLikeButtons() {
@@ -1083,9 +2153,15 @@
   document.querySelectorAll('.card .like').forEach(btn => btn.addEventListener('click', e => {
     e.stopPropagation();
     toggleLike(btn.dataset.id);
-    showToast(isLiked(btn.dataset.id) ? '❤️ Added to Liked' : 'Removed from Liked', '', '');
+    const liked = isLiked(btn.dataset.id);
+    if (liked) { const r = btn.getBoundingClientRect(); heartBurst(r.left + r.width / 2, r.top + r.height / 2); }
+    showToast(liked ? '❤️ Added to Liked' : 'Removed from Liked', '', '');
   }));
-  $('btnLike').onclick = () => { if (current < 0) return; toggleLike(cards[current].dataset.id); };
+  $('btnLike').onclick = () => {
+    if (current < 0) return;
+    toggleLike(cards[current].dataset.id);
+    if (isLiked(cards[current].dataset.id)) { const r = $('btnLike').getBoundingClientRect(); heartBurst(r.left + r.width / 2, r.top + r.height / 2); }
+  };
   refreshLikeButtons();
 
   /* ---------- share / deep links ---------- */
@@ -1136,9 +2212,28 @@
   setInterval(() => makeBubble(false), 1500);
   for (let i = 0; i < 6; i++) setTimeout(() => makeBubble(false), i * 350);
 
+  /* ---------- drifting sakura petals 🌸 ---------- */
+  function makePetal() {
+    const s = $('sakura');
+    const p = document.createElement('div');
+    p.className = 'petal';
+    const size = 9 + Math.random() * 10;
+    p.style.width = size + 'px';
+    p.style.height = size * 0.9 + 'px';
+    p.style.left = (Math.random() * 100) + 'vw';
+    const dur = 9 + Math.random() * 8;
+    p.style.animationDuration = dur + 's';
+    p.style.opacity = (0.5 + Math.random() * 0.5).toFixed(2);
+    s.appendChild(p);
+    setTimeout(() => p.remove(), dur * 1000);
+  }
+  setInterval(makePetal, 900);
+  for (let i = 0; i < 8; i++) setTimeout(makePetal, i * 500);
+
   /* ---------- clickable fish easter egg ---------- */
   let frenzyT = null;
   document.querySelectorAll('.fish').forEach(f => f.addEventListener('click', () => {
+    koto();
     document.querySelectorAll('.fish').forEach(fish => {
       const cur = parseFloat(getComputedStyle(fish).animationDuration) || 26;
       if (!fish.dataset.normDur) fish.dataset.normDur = cur;
@@ -1159,6 +2254,318 @@
   $('helpFab').onclick = () => $('help').classList.toggle('show');
   $('helpClose').onclick = () => $('help').classList.remove('show');
   $('help').addEventListener('click', e => { if (e.target === $('help')) $('help').classList.remove('show'); });
+
+  /* ---------- theater (expanded player) ---------- */
+  function renderUpNext() {
+    const c = $('tmList'); c.innerHTML = '';
+    const vis = visibleOrder(); if (!vis.length) return;
+    const pos = vis.indexOf(current);
+    let shown = 0;
+    for (let k = 1; k <= vis.length; k++) {
+      const idx = vis[(pos + k) % vis.length];
+      if (idx === current) break;
+      const card = cards[idx];
+      const row = document.createElement('div'); row.className = 'tm-row';
+      const img = document.createElement('img'); img.src = card.dataset.cover || ''; img.alt = '';
+      const meta = document.createElement('div'); meta.className = 'meta';
+      const t = document.createElement('div'); t.className = 't'; t.textContent = card.dataset.title;
+      const a = document.createElement('div'); a.className = 'a'; a.textContent = card.dataset.artist;
+      meta.append(t, a); row.append(img, meta);
+      row.onclick = () => { play(idx); renderUpNext(); };
+      c.appendChild(row);
+      if (++shown >= 30) break;
+    }
+  }
+  function placeVideo() {
+    if (!document.body.classList.contains('theater-open')) return;
+    const r = $('tmScreen').getBoundingClientRect();
+    ['nbArt', 'stageLayer'].forEach(id => {
+      const el = $(id);
+      el.style.position = 'fixed';
+      el.style.top = r.top + 'px';
+      el.style.left = r.left + 'px';
+      el.style.width = r.width + 'px';
+      el.style.height = r.height + 'px';
+    });
+  }
+
+  /* music-flow intro animation */
+  (function () {
+    const f = $('vizFlow');
+    for (let i = 0; i < 40; i++) {
+      const b = document.createElement('i');
+      b.style.animationDelay = (Math.random()).toFixed(2) + 's';
+      b.style.animationDuration = (0.55 + Math.random() * 0.75).toFixed(2) + 's';
+      f.appendChild(b);
+    }
+  })();
+  function showViz() {
+    const cover = current >= 0 ? cards[current].dataset.cover : '';
+    $('vizBg').style.backgroundImage = cover ? 'url("' + cover + '")' : 'none';
+    $('tmViz').classList.add('show');
+    $('vizShow').style.display = 'none';
+  }
+  function hideViz() {
+    $('tmViz').classList.remove('show');
+    $('vizShow').style.display = 'inline-flex';
+  }
+  $('vizWatch').onclick = hideViz;
+  $('vizShow').onclick = showViz;
+  function syncTheaterStates() {
+    $('tmShuffle').classList.toggle('active', shuffle);
+    $('tmRepeat').classList.toggle('active', repeat);
+    const id = current >= 0 ? cards[current].dataset.id : null;
+    $('tmLike').classList.toggle('liked', isLiked(id));
+  }
+  function openTheater() {
+    if (current < 0) { const v = visibleOrder(); if (!v.length) return; play(v[0]); }
+    document.body.classList.add('theater-open');
+    renderUpNext();
+    syncTheaterStates();
+    showViz();
+    requestAnimationFrame(placeVideo);
+  }
+  function closeTheater() {
+    document.body.classList.remove('theater-open');
+    const a = $('nbArt');
+    a.style.position = ''; a.style.top = ''; a.style.left = ''; a.style.width = ''; a.style.height = '';
+  }
+  function toggleTheater() { document.body.classList.contains('theater-open') ? closeTheater() : openTheater(); }
+  $('btnExpand').onclick = (e) => { e.stopPropagation(); toggleTheater(); };
+  $('theaterClose').onclick = closeTheater;
+  $('theater').onclick = closeTheater;
+  window.addEventListener('resize', placeVideo);
+
+  /* theater controls reuse the main player logic */
+  $('tmPlay').onclick = toggle;
+  $('tmNext').onclick = next;
+  $('tmPrev').onclick = prev;
+  $('tmShuffle').onclick = () => { $('btnShuffle').click(); syncTheaterStates(); };
+  $('tmRepeat').onclick = () => { $('btnRepeat').click(); syncTheaterStates(); };
+  $('tmLike').onclick = () => { $('btnLike').click(); syncTheaterStates(); };
+  $('tmShare').onclick = shareCurrent;
+  $('tmProgress').addEventListener('click', e => {
+    if (!player || !player.getDuration) return;
+    const r = e.currentTarget.getBoundingClientRect();
+    player.seekTo(player.getDuration() * ((e.clientX - r.left) / r.width), true);
+  });
+
+  /* ---------- play counts + live replay stat ---------- */
+  const PLAYS_KEY = 'sb_plays';
+  let plays = {};
+  try { plays = JSON.parse(localStorage.getItem(PLAYS_KEY) || '{}'); } catch (e) {}
+  function totalPlays() { return Object.values(plays).reduce((a, b) => a + b, 0); }
+  function renderReplayStat() {
+    const n = totalPlays();
+    $('replayStat').textContent = n > 0 ? n : '∞';
+  }
+  function renderPlayBadges() {
+    document.querySelectorAll('.card .pcount').forEach(el => {
+      const n = plays[el.dataset.id] || 0;
+      el.classList.toggle('show', n > 0);
+      el.querySelector('b').textContent = n;
+    });
+  }
+  function bumpPlay(id) {
+    if (!id) return;
+    plays[id] = (plays[id] || 0) + 1;
+    try { localStorage.setItem(PLAYS_KEY, JSON.stringify(plays)); } catch (e) {}
+    renderReplayStat(); renderPlayBadges();
+  }
+  renderReplayStat(); renderPlayBadges();
+
+  /* ---------- mute / volume ---------- */
+  let muted = false;
+  function setMuteIcon() {
+    $('muteIcon').innerHTML = muted
+      ? '<path d="M3 10v4h4l5 5V5L7 10H3z"/><path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>'
+      : '<path d="M3 10v4h4l5 5V5L7 10H3z"/><path d="M16 8.5a4 4 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18.5 6a7 7 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>';
+  }
+  function toggleMute() {
+    if (!player || !player.mute) return;
+    muted = !muted;
+    muted ? player.mute() : player.unMute();
+    $('btnMute').classList.toggle('active', muted);
+    setMuteIcon();
+    showToast(muted ? '🔇 Muted' : '🔊 Sound on', '', '');
+  }
+  $('btnMute').onclick = toggleMute;
+
+  /* ---------- back to top ---------- */
+  const toTop = $('toTop');
+  window.addEventListener('scroll', () => toTop.classList.toggle('show', window.scrollY > 600), { passive: true });
+  toTop.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  /* ---------- time-based Japanese greeting ---------- */
+  (function () {
+    const h = new Date().getHours();
+    const g = h < 5  ? { jp: 'こんばんは', en: 'good night' }
+            : h < 11 ? { jp: 'おはよう',   en: 'good morning' }
+            : h < 18 ? { jp: 'こんにちは', en: 'good afternoon' }
+            :          { jp: 'こんばんは', en: 'good evening' };
+    const el = $('greet'); if (el) el.textContent = g.jp + ' · ' + g.en;
+  })();
+
+  /* ---------- count-up stats ---------- */
+  (function () {
+    document.querySelectorAll('.num').forEach(el => {
+      const target = parseInt(el.dataset.target || '0', 10);
+      if (!target) return;
+      let cur = 0; const step = Math.max(1, Math.round(target / 28));
+      const t = setInterval(() => {
+        cur += step;
+        if (cur >= target) { cur = target; clearInterval(t); }
+        el.textContent = cur;
+      }, 28);
+    });
+  })();
+
+  /* ---------- scroll reveal for cards ---------- */
+  (function () {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      cards.forEach(c => c.classList.add('in')); return;
+    }
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e, i) => {
+        if (e.isIntersecting) {
+          setTimeout(() => e.target.classList.add('in'), (i % 6) * 60);
+          io.unobserve(e.target);
+        }
+      });
+    }, { rootMargin: '0px 0px -8% 0px' });
+    cards.forEach(c => io.observe(c));
+  })();
+
+  /* ---------- cursor spotlight on cards ---------- */
+  cards.forEach(card => card.addEventListener('pointermove', e => {
+    const r = card.getBoundingClientRect();
+    card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+    card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  }));
+
+  /* ---------- live tab title + OS media controls ---------- */
+  function setNowMeta(card) {
+    document.title = '♪ ' + card.dataset.title + ' — ' + card.dataset.artist + ' · SilverBass';
+    if ('mediaSession' in navigator) {
+      try {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: card.dataset.title,
+          artist: card.dataset.artist,
+          album: 'SilverBass',
+          artwork: card.dataset.cover ? [{ src: card.dataset.cover, sizes: '480x360', type: 'image/jpeg' }] : []
+        });
+        navigator.mediaSession.setActionHandler('play', () => toggle());
+        navigator.mediaSession.setActionHandler('pause', () => toggle());
+        navigator.mediaSession.setActionHandler('nexttrack', () => next());
+        navigator.mediaSession.setActionHandler('previoustrack', () => prev());
+      } catch (e) {}
+    }
+  }
+
+  /* ---------- koto pluck chime (Web Audio) ---------- */
+  let audioCtx = null;
+  function koto() {
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      const ctx = audioCtx;
+      const pent = [523.25, 587.33, 698.46, 783.99, 880.0]; // C D F G A — pentatonic
+      const base = pent[Math.floor(Math.random() * pent.length)];
+      [0, 1.5].forEach((mult, k) => {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = 'triangle';
+        o.frequency.value = k ? base * 2 : base;
+        const t0 = ctx.currentTime + k * 0.04;
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(k ? 0.08 : 0.18, t0 + 0.012);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.1);
+        o.connect(g).connect(ctx.destination);
+        o.start(t0); o.stop(t0 + 1.2);
+      });
+    } catch (e) {}
+  }
+
+  /* ---------- heart burst on like ---------- */
+  function heartBurst(x, y) {
+    const wrap = document.createElement('div');
+    wrap.className = 'heart-burst';
+    wrap.style.left = x + 'px'; wrap.style.top = y + 'px';
+    for (let i = 0; i < 8; i++) {
+      const s = document.createElement('span');
+      s.textContent = Math.random() < 0.5 ? '❤' : '🌸';
+      const ang = (Math.PI * 2 * i) / 8 + Math.random();
+      const dist = 30 + Math.random() * 40;
+      s.style.setProperty('--dx', Math.cos(ang) * dist + 'px');
+      s.style.setProperty('--dy', (Math.sin(ang) * dist - 20) + 'px');
+      s.style.animationDelay = (Math.random() * 0.08) + 's';
+      wrap.appendChild(s);
+    }
+    document.body.appendChild(wrap);
+    setTimeout(() => wrap.remove(), 1000);
+  }
+
+  /* ---------- track of the day (deterministic per date) ---------- */
+  (function () {
+    const playable = cards.map((c, i) => ({ c, i })).filter(x => x.c.dataset.id);
+    if (!playable.length) return;
+    const now = new Date();
+    const dayNum = Math.floor(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86400000);
+    const pick = playable[dayNum % playable.length];
+    const card = pick.c;
+    $('totdImg').src = card.dataset.cover || '';
+    $('totdTitle').textContent = card.dataset.title;
+    $('totdArtist').textContent = card.dataset.artist;
+    $('totd').style.display = 'flex';
+    $('totd').onclick = () => play(pick.i);
+    $('totdPlay').onclick = (e) => { e.stopPropagation(); play(pick.i); };
+  })();
+
+  /* ---------- volume slider ---------- */
+  $('vol').addEventListener('input', e => {
+    const v = +e.target.value;
+    if (player && player.setVolume) player.setVolume(v);
+    if (v > 0 && muted) { muted = false; player.unMute(); $('btnMute').classList.remove('active'); setMuteIcon(); }
+  });
+
+  /* ---------- sleep timer ---------- */
+  let sleepT = null, sleepMin = 0;
+  const sleepOpts = [15, 30, 45, 60, 0];
+  $('sleepBtn').onclick = () => {
+    sleepMin = sleepOpts[(sleepOpts.indexOf(sleepMin) + 1) % sleepOpts.length];
+    clearTimeout(sleepT);
+    if (sleepMin > 0) {
+      $('sleepBtn').classList.add('active');
+      $('sleepBtn').textContent = '🌙 ' + sleepMin + 'm';
+      showToast('🌙 Sleep timer set', sleepMin + ' minutes', '');
+      sleepT = setTimeout(() => {
+        if (player && player.pauseVideo) player.pauseVideo();
+        $('sleepBtn').classList.remove('active'); $('sleepBtn').textContent = '🌙 Sleep'; sleepMin = 0;
+        showToast('🌙 Oyasumi — good night', 'Music paused', '');
+      }, sleepMin * 60000);
+    } else {
+      $('sleepBtn').classList.remove('active'); $('sleepBtn').textContent = '🌙 Sleep';
+      showToast('Sleep timer off', '', '');
+    }
+  };
+
+  /* ---------- install prompt (PWA) ---------- */
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault(); deferredPrompt = e; $('installBtn').style.display = 'inline-flex';
+  });
+  $('installBtn').onclick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt(); await deferredPrompt.userChoice;
+    deferredPrompt = null; $('installBtn').style.display = 'none';
+  };
+  window.addEventListener('appinstalled', () => {
+    $('installBtn').style.display = 'none';
+    showToast('🐟 Installed!', 'SilverBass added to your device', '');
+  });
+
+  /* ---------- service worker (offline support) ---------- */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  }
 
   /* ---------- deep link: ?t=VIDEO_ID auto-plays ---------- */
   (function () {

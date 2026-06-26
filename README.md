@@ -28,6 +28,7 @@ SilverBass turns a simple `playlist.yml` file into a **gorgeous, fully-interacti
 ## ✨ What it does
 
 - **🎛️ Built-in player** — click any track and a sticky "Now Playing" bar slides up with play/pause, previous/next, **shuffle**, **repeat**, autoplay-next, a scrubber, and a live **audio visualizer**. Powered by the YouTube IFrame API.
+- **🎬 Theater mode** — expand the player into a big cinematic video with the track title and an **Up Next** queue strip (press `t`).
 - **🖼️ Automatic cover art** — album/video thumbnails are pulled straight from each YouTube link. Just paste a URL.
 - **❤️ Likes that stick** — heart any track and it's saved in your browser, with a dedicated "Liked" filter.
 - **🔗 Shareable deep-links** — the Share button copies a link that opens the site *already cued to that song* (native share sheet on mobile).
